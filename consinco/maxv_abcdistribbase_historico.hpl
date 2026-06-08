@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <pipeline>
   <info>
     <name>maxv_abcdistribbase_historico</name>
@@ -63,7 +63,7 @@
     <partitioning_enabled>N</partitioning_enabled>
     <partitioning_monthly>Y</partitioning_monthly>
     <return_keys>N</return_keys>
-    <schema>raw</schema>
+    <schema>bronze</schema>
     <specify_fields>N</specify_fields>
     <table>maxv_abcdistribbase</table>
     <tablename_in_field>N</tablename_in_field>

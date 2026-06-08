@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <pipeline>
   <info>
     <name>etlv_categoria</name>
@@ -54,7 +54,7 @@
     <partitioning_monthly>Y</partitioning_monthly>
     <return_field/>
     <return_keys>N</return_keys>
-    <schema>raw</schema>
+    <schema>bronze</schema>
     <specify_fields>N</specify_fields>
     <table>etlv_categoria</table>
     <tablename_field/>

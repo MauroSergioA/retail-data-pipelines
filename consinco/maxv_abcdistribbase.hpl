@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <pipeline>
   <info>
     <name>maxv_abcdistribbase</name>
@@ -12,7 +12,7 @@
       <parameter>
         <name>WINDOW_DAYS</name>
         <default_value>0</default_value>
-        <description>Janela de dias para extraÃ§Ã£o</description>
+        <description>Janela de dias para extração</description>
       </parameter>
     </parameters>
     <capture_transform_performance>N</capture_transform_performance>
@@ -60,7 +60,7 @@
     <partitioning_monthly>Y</partitioning_monthly>
     <return_field/>
     <return_keys>N</return_keys>
-    <schema>raw</schema>
+    <schema>bronze</schema>
     <specify_fields>N</specify_fields>
     <table>maxv_abcdistribbase</table>
     <tablename_field/>
