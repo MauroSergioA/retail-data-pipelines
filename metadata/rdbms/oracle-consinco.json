@@ -1,0 +1,28 @@
+{
+  "virtualPath": "",
+  "rdbms": {
+    "ORACLE": {
+      "databaseName": "${CONSINCO_DATABASE}",
+      "pluginId": "ORACLE",
+      "accessType": 0,
+      "hostname": "${CONSINCO_HOSTNAME}",
+      "password": "${CONSINCO_PASSWORD}",
+      "pluginName": "Oracle",
+      "port": "${CONSINCO_PORT}",
+      "attributes": {
+        "SUPPORTS_TIMESTAMP_DATA_TYPE": "Y",
+        "QUOTE_ALL_FIELDS": "N",
+        "SUPPORTS_BOOLEAN_DATA_TYPE": "Y",
+        "FORCE_IDENTIFIERS_TO_LOWERCASE": "N",
+        "PRESERVE_RESERVED_WORD_CASE": "Y",
+        "SQL_CONNECT": "",
+        "FORCE_IDENTIFIERS_TO_UPPERCASE": "N",
+        "PREFERRED_SCHEMA_NAME": "",
+        "EXTRA_OPTION_ORACLE.oracle.jdbc.ReadTimeout": "7200000"
+      },
+      "manualUrl": "${CONSINCO_URL}",
+      "username": "${CONSINCO_USERNAME}"
+    }
+  },
+  "name": "oracle-consinco"
+}
