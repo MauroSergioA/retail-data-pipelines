@@ -11,9 +11,3 @@ COPY --chown=hop:hop workflows/   /home/hop/project/workflows/
 COPY --chown=hop:hop metadata/    /home/hop/project/metadata/
 
 EXPOSE 8080
-
-CMD ["/bin/bash", "-c", \
-  "hop-server.sh \
-    --hostname ${HOP_SERVER_HOSTNAME} \
-    --port ${HOP_SERVER_PORT} \
-    --password ${HOP_SERVER_PASSWORD}"]
