@@ -18,7 +18,8 @@
         "SQL_CONNECT": "",
         "FORCE_IDENTIFIERS_TO_UPPERCASE": "N",
         "PREFERRED_SCHEMA_NAME": "",
-        "EXTRA_OPTION_ORACLE.oracle.jdbc.ReadTimeout": "7200000"
+        "EXTRA_OPTION_ORACLE.oracle.jdbc.ReadTimeout": "7200000",
+        "EXTRA_OPTION_ORACLE.defaultRowPrefetch": "1000"
       },
       "manualUrl": "${CONSINCO_URL}",
       "username": "${CONSINCO_USERNAME}"
