@@ -6,11 +6,12 @@ ENV HOP_ENVIRONMENT_NAME=prod
 ENV HOP_SERVER_PORT=8080
 ENV HOP_SERVER_HOSTNAME=0.0.0.0
 ENV HOP_CUSTOM_ENTRYPOINT_EXTENSION_SHELL_FILE_PATH=/home/hop/init-hop-vars.sh
+ENV HOP_CONFIG_DIRECTORY=/home/hop/.hop
 
 USER root
 RUN curl -fsSL \
     "https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/21.9.0.0/ojdbc8-21.9.0.0.jar" \
-    -o /opt/hop/lib/ojdbc8.jar
+    -o /opt/hop/plugins/databases/oracle/ojdbc8.jar
 
 COPY --chown=hop:hop scripts/init-hop-vars.sh /home/hop/init-hop-vars.sh
 RUN chmod +x /home/hop/init-hop-vars.sh
