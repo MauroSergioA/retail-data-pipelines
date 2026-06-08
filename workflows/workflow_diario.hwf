@@ -499,28 +499,7 @@
       <yloc>240</yloc>
       <attributes_hac/>
     </action>
-    <action>
-      <name>dbt run</name>
-      <description/>
-      <type>SHELL</type>
-      <attributes/>
-      <add_date>N</add_date>
-      <add_time>N</add_time>
-      <arg_from_previous>N</arg_from_previous>
-      <arguments>
-</arguments>
-      <exec_per_row>N</exec_per_row>
-      <filename>C:\Projetos\superque-analytics\orchestration\run_dbt.bat</filename>
-      <insertScript>N</insertScript>
-      <loglevel>Basic</loglevel>
-      <set_append_logfile>N</set_append_logfile>
-      <set_logfile>N</set_logfile>
-      <work_directory>C:\Projetos\superque-analytics\transform</work_directory>
-      <parallel>N</parallel>
-      <xloc>96</xloc>
-      <yloc>240</yloc>
-      <attributes_hac/>
-    </action>
+
   </actions>
   <hops>
     <hop>
@@ -646,13 +625,6 @@
       <from>mrl_promocao.hpl</from>
       <to>mrl_promocaoitem.hpl</to>
       <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
-    </hop>
-    <hop>
-      <from>mrl_promocaoitem.hpl</from>
-      <to>dbt run</to>
-      <enabled>N</enabled>
       <evaluation>Y</evaluation>
       <unconditional>N</unconditional>
     </hop>
