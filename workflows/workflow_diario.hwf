@@ -652,7 +652,7 @@
     <hop>
       <from>mrl_promocaoitem.hpl</from>
       <to>dbt run</to>
-      <enabled>Y</enabled>
+      <enabled>N</enabled>
       <evaluation>Y</evaluation>
       <unconditional>N</unconditional>
     </hop>
