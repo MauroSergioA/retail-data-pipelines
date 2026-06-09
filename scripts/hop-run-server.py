@@ -21,8 +21,6 @@ def _run():
                 "--file=workflows/workflow_diario.hwf",
                 "--runconfig=local",
             ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
         )
     finally:
         with _lock:
