@@ -1,0 +1,503 @@
+version: 2
+
+models:
+  # ---------------------------------------------------------------------------
+  # Fatos
+  # ---------------------------------------------------------------------------
+  - name: fato_venda
+    description: >
+      Fato de vendas PDV da rede Superque. Histórico acumulado com carregamento
+      incremental (delete+insert). Hot: atualiza hoje 4x/dia. Cold: atualiza D-5
+      na madrugada para capturar correções retroativas.
+      Métricas de custo e lucro calculadas pelas funções Oracle FC5 no momento
+      da extração pelo Hop.
+    columns:
+      - name: dta_hora_venda
+        description: Timestamp truncado à hora — compõe a chave única.
+        data_tests:
+          - not_null
+      - name: dta_venda
+        description: Data da venda.
+        data_tests:
+          - not_null
+      - name: hora_venda
+        description: Hora da venda (0–23).
+      - name: nro_empresa
+        description: Código da loja.
+        data_tests:
+          - not_null
+      - name: nro_docto
+        description: Número do documento (cupom fiscal).
+        data_tests:
+          - not_null
+      - name: serie_docto
+        description: Série do documento fiscal.
+      - name: checkout
+        description: Número do checkout (caixa).
+      - name: nro_documento
+        description: Chave do documento fiscal — lpad(empresa,2)-lpad(docto,9)-serie-lpad(checkout,2).
+        data_tests:
+          - not_null
+      - name: nro_forma_pagto
+        description: Código da forma de pagamento.
+      - name: nro_segmento
+        description: Número do segmento da venda.
+      - name: cod_geral_oper
+        description: "Código da operação. Somente: 800, 810, 820, 828, 202."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [800, 810, 820, 828, 202]
+      - name: seq_produto
+        description: Código sequencial do produto.
+        data_tests:
+          - not_null
+      - name: seq_operador
+        description: Código sequencial do operador de PDV.
+      - name: qtd_venda_item
+        description: Quantidade vendida do item.
+      - name: qtd_devol_item
+        description: Quantidade devolvida do item.
+      - name: qtd_venda_liq
+        description: Quantidade líquida — qtd_venda_item - qtd_devol_item.
+      - name: vlr_venda_item
+        description: Valor bruto da venda do item.
+      - name: vlr_devol_item
+        description: Valor da devolução do item.
+      - name: vlr_venda_liq
+        description: Valor líquido da venda — vlr_venda_item - vlr_devol_item.
+      - name: vlr_desconto_item
+        description: Valor de desconto aplicado ao item.
+      - name: vlr_venda_promoc
+        description: Valor de venda promocional — função Oracle FC5_AbcDistribVendaPromoc.
+      - name: vlr_lucro
+        description: Lucro — função Oracle FC5_AbcDistribLucratividade.
+      - name: vlr_custo_bruto
+        description: Custo bruto — função Oracle FC5_AbcDistribCustoBruto.
+      - name: vlr_custo_liquido
+        description: Custo líquido — função Oracle FC5_AbcDistribCustoLiquido.
+      - name: loaded_at
+        description: Timestamp da última carga do pipeline Hop.
+        data_tests:
+          - not_null
+
+  # ---------------------------------------------------------------------------
+  # Marts
+  # ---------------------------------------------------------------------------
+  - name: mart_curva_abc
+    description: >
+      Curva ABC de produtos por loja, calculada sobre os últimos 12 meses a partir
+      da data mais recente em fato_venda. Grain: produto_id × empresa_id.
+      Três dimensões de classificação: por empresa (loja), por categoria × empresa,
+      e por rede (consolidado da rede). Cada dimensão é classificada por valor
+      (receita líquida) e por quantidade líquida vendida.
+      Inclui apenas produtos com receita líquida positiva no período.
+      Recalcular semanalmente — a curva não muda de forma relevante dia a dia.
+    columns:
+      - name: empresa_id
+        description: Código da loja. Compõe a chave do grain.
+        data_tests:
+          - not_null
+      - name: produto_id
+        description: Código sequencial do produto. Compõe a chave do grain.
+        data_tests:
+          - not_null
+        # unicidade do grain (empresa_id × produto_id) validada em tests/mart_curva_abc_grain_unico.sql
+      - name: familia_id
+        description: Código da família do produto (FK dim_produto_info).
+      - name: categoria_id
+        description: Código da categoria nível 1 do produto (FK dim_produto_info).
+      - name: receita_liq
+        description: Receita líquida do produto na loja no período (vlr_venda_liq, operações 800/810/820/828).
+      - name: quantidade_liq
+        description: Quantidade líquida vendida do produto na loja no período.
+      - name: receita_liq_rede
+        description: Receita líquida do produto consolidada em todas as lojas no período.
+      - name: quantidade_liq_rede
+        description: Quantidade líquida vendida do produto consolidada em todas as lojas no período.
+      - name: pct_acum_valor_empresa
+        description: Percentual acumulado de receita do produto dentro da loja (ordenado do maior para o menor).
+      - name: curva_abc_valor_empresa
+        description: "Classificação ABC do produto na loja por valor: A (0–80%), B (80–95%), C (95–100%)."
+      - name: pct_acum_qtd_empresa
+        description: Percentual acumulado de quantidade do produto dentro da loja.
+      - name: curva_abc_qtd_empresa
+        description: "Classificação ABC do produto na loja por quantidade: A (0–80%), B (80–95%), C (95–100%)."
+      - name: pct_acum_valor_categoria
+        description: Percentual acumulado de receita do produto dentro da categoria na loja.
+      - name: curva_abc_valor_categoria
+        description: "Classificação ABC do produto na categoria × loja por valor: A, B ou C."
+      - name: pct_acum_qtd_categoria
+        description: Percentual acumulado de quantidade do produto dentro da categoria na loja.
+      - name: curva_abc_qtd_categoria
+        description: "Classificação ABC do produto na categoria × loja por quantidade: A, B ou C."
+      - name: pct_acum_valor_rede
+        description: Percentual acumulado de receita do produto na rede (todas as lojas consolidadas).
+      - name: curva_abc_valor_rede
+        description: "Classificação ABC do produto na rede por valor: A, B ou C."
+      - name: pct_acum_qtd_rede
+        description: Percentual acumulado de quantidade do produto na rede.
+      - name: curva_abc_qtd_rede
+        description: "Classificação ABC do produto na rede por quantidade: A, B ou C."
+      - name: periodo_inicio
+        description: Data de início do período de 12 meses utilizado no cálculo.
+      - name: periodo_fim
+        description: Data de fim do período — MAX(dta_venda) em fato_venda no momento do build.
+      - name: carregado_em
+        description: Timestamp do build dbt que gerou esta versão do mart.
+        data_tests:
+          - not_null
+
+  # ---------------------------------------------------------------------------
+  # Dimensões
+  # ---------------------------------------------------------------------------
+  - name: dim_empresa_info
+    description: >
+      Dimensão de lojas e empresas da rede Superque.
+      Inclui todas as unidades, ativas e inativas — filtrar por status_empresa = 'A'
+      para obter apenas lojas ativas. Nunca filtrar por NOT IN (3, 4).
+      Agrega total_pdv_ativo por loja a partir de stg_vw_pdv.
+    columns:
+      - name: empresa_id
+        description: Chave primária — código da loja no Consinco (nroempresa).
+        data_tests:
+          - not_null
+          - unique
+      - name: divisao_id
+        description: Código da divisão comercial da loja.
+      - name: loja
+        description: >
+          Descrição padronizada: NNN - CIDADE [L1/L2].
+          MATRIZ hardcoded para empresa_id = 1. Sufixo L1/L2 quando há mais de uma loja na cidade.
+        data_tests:
+          - not_null
+          - unique
+      - name: razao_social
+        description: Razão social da empresa (UPPER).
+      - name: pessoa_id_razao
+        description: Chave de exibição — lpad(pessoa_id,5,'0') || ' - ' || razao_social.
+      - name: cnpj
+        description: CNPJ formatado — lpad(nrocgc,12,'0') || '-' || lpad(digcgc,2,'0').
+      - name: inscricao_estadual
+        description: Inscrição estadual da empresa.
+      - name: logradouro
+        description: Logradouro do endereço da loja (UPPER).
+      - name: bairro
+        description: Bairro da loja (UPPER).
+      - name: cep
+        description: CEP da loja.
+      - name: cidade
+        description: Cidade da loja (UPPER).
+      - name: uf
+        description: UF da loja (UPPER).
+      - name: endereco
+        description: Endereço completo concatenado — logradouro, bairro, CEP, cidade, UF.
+      - name: metro_quadrado
+        description: Área da loja em m².
+      - name: pessoa_id
+        description: Código da pessoa jurídica vinculada no ge_pessoa (FK).
+      - name: segmento_principal
+        description: Número do segmento principal da loja.
+      - name: segmento_id_nome
+        description: Chave de exibição do segmento — lpad(segmento_id,3,'0') || ' - ' || segmento.
+      - name: aberto_sabado
+        description: "Indica se a loja abre aos sábados: SIM ou NÃO."
+      - name: aberto_domingo
+        description: "Indica se a loja abre aos domingos: SIM ou NÃO."
+      - name: meta_margem_lucro
+        description: Meta gerencial de margem de lucro.
+      - name: meta_dia_estoque
+        description: Meta gerencial de dias de estoque.
+      - name: status_empresa
+        description: "Status da loja: ATIVA ou INATIVA."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['ATIVA', 'INATIVA']
+      - name: dta_fechamento_fiscal
+        description: Data do fechamento fiscal da loja.
+      - name: inicio_estoque
+        description: Data de início do controle de estoque.
+      - name: nsu_nf
+        description: Número sequencial único de NF.
+      - name: total_pdv_ativo
+        description: Quantidade de checkouts ativos (pdv_ativo = 'SIM') na loja.
+      - name: carregado_em
+        description: Timestamp da última carga do pipeline Hop.
+        data_tests:
+          - not_null
+
+  - name: dim_produto_info
+    description: >
+      Dimensão de produtos desnormalizada — une produto, família, categoria
+      (hierarquia de 3 níveis via etlv_categoria), marca, códigos EAN/balança e
+      fornecedor principal. Uma linha por produto, sem filtro de status
+      (status de compra por loja está em mrl_produtoempresa.statuscompra).
+      Categoria deduplicada: prioriza divisão 1, fallback para menor divisão
+      disponível — garante que nenhum produto perca informação de categoria.
+    columns:
+      - name: produto_id
+        description: Chave primária — código sequencial do produto.
+        data_tests:
+          - not_null
+          - unique
+      - name: produto
+        description: Descrição completa do produto (UPPER).
+        data_tests:
+          - not_null
+      - name: produto_id_nome
+        description: Chave de exibição — lpad(produto_id,6,'0') || ' - ' || produto.
+      - name: codigo_acesso
+        description: >
+          Códigos EAN e balança concatenados com ' ; ', ordenados por tipo (EAN primeiro).
+          NULL quando o produto não possui código cadastrado.
+      - name: familia_id
+        description: Código da família.
+        data_tests:
+          - not_null
+      - name: familia
+        description: Descrição da família (UPPER).
+      - name: familia_id_nome
+        description: Chave de exibição — lpad(familia_id,6,'0') || ' - ' || familia.
+      - name: pesavel
+        description: "Indica se o produto é pesável: SIM ou NÃO."
+      - name: permite_decimal
+        description: "Indica se a família permite quantidade decimal: SIM ou NÃO."
+      - name: categoria_id
+        description: Código da categoria nível 1.
+      - name: categoria
+        description: Descrição da categoria nível 1.
+      - name: categoria_id_nome
+        description: Chave de exibição categoria — lpad(id,4,'0') || ' - ' || categoria.
+      - name: subcategoria_id
+        description: Código da categoria nível 2.
+      - name: subcategoria
+        description: Descrição da categoria nível 2. NÃO DEFINIDA quando ausente.
+      - name: subcategoria_id_nome
+        description: Chave de exibição subcategoria.
+      - name: grupo_id
+        description: Código da categoria nível 3 (fallback para nível 2 quando ausente).
+      - name: grupo
+        description: Descrição da categoria nível 3 (fallback para nível 2 quando ausente).
+      - name: grupo_id_nome
+        description: Chave de exibição grupo.
+      - name: sk_categoria
+        description: Chave surrogate da categoria completa no Consinco.
+      - name: categoria_completa
+        description: Descrição concatenada dos 3 níveis da hierarquia.
+      - name: categoria_completa_id_nome
+        description: Chave de exibição da categoria completa.
+      - name: perecivel
+        description: "Classifica o produto como PERECÍVEL ou NÃO PERECÍVEL com base na categoria."
+      - name: marca_id
+        description: Código da marca.
+      - name: marca
+        description: Descrição da marca. NÃO DEFINIDA quando ausente.
+      - name: marca_id_nome
+        description: Chave de exibição — lpad(marca_id,4,'0') || ' - ' || marca.
+      - name: fornecedor_principal_id
+        description: Código do fornecedor principal da família (FK para ge_pessoa).
+      - name: fornecedor_principal
+        description: Razão social do fornecedor principal (UPPER). NÃO DEFINIDO quando ausente.
+      - name: fornecedor_principal_id_nome
+        description: Chave de exibição — lpad(fornecedor_principal_id,5,'0') || ' - ' || nome_razao.
+      - name: data_inclusao
+        description: Data de inclusão do produto no cadastro do Consinco.
+      - name: carregado_em
+        description: Timestamp da última carga do pipeline Hop.
+        data_tests:
+          - not_null
+
+  - name: dim_produto_empresa
+    description: >
+      Snapshot operacional de produto por loja (grain: produto_id × empresa_id).
+      Contém apenas atributos específicos do grain — estoques, preços (pelo segmento
+      principal da loja), médias de venda, custos, datas e métricas derivadas
+      (dia_estoque, dia_sem_compra, dia_sem_venda). Sem redundância de atributos
+      descritivos de produto ou loja — usar relacionamento com dim_produto_info e
+      dim_empresa_info. status_empresa incluído como conveniência de filtro.
+      Sem filtro de loja ativa — filtrar por status_empresa = 'ATIVA' ou
+      status_compra = 'ATIVO' conforme o uso.
+    columns:
+      - name: produto_id
+        description: FK para dim_produto_info. Compõe a chave do grain.
+        data_tests:
+          - not_null
+      - name: empresa_id
+        description: FK para dim_empresa_info. Compõe a chave do grain.
+        data_tests:
+          - not_null
+      - name: status_empresa
+        description: "Status da loja: ATIVA ou INATIVA. Conveniência para filtro sem join com dim_empresa_info."
+      - name: status_compra
+        description: "Status de compra do produto nesta loja: ATIVO, INATIVO ou NÃO INFORMADO."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['ATIVO', 'INATIVO', 'NÃO INFORMADO']
+      - name: status_venda
+        description: "Status de venda do produto nesta loja (via mrl_prodempseg, segmento principal): ATIVO, INATIVO ou NÃO INFORMADO."
+      - name: gera_ruptura
+        description: "Indica se o produto entra no cálculo de ruptura: SIM ou NÃO."
+      - name: ind_em_promoc
+        description: "Indica se o produto tem promoção vigente hoje nesta loja: SIM ou NÃO."
+      - name: promocao_vigente_id
+        description: Código da promoção vigente. NULL quando ind_em_promoc = 'NÃO'.
+      - name: preco_promoc_vigente
+        description: Preço promocional da promoção vigente. NULL quando sem promoção.
+      - name: perc_desconto_promoc
+        description: Percentual de desconto da promoção vigente. NULL quando sem promoção.
+      - name: dta_inicio_promoc
+        description: Data de início da promoção vigente (usa data do item quando disponível, senão do cabeçalho).
+      - name: dta_fim_promoc
+        description: Data de fim da promoção vigente (usa data do item quando disponível, senão do cabeçalho).
+      - name: gera_ruptura
+        description: "Indica se o produto entra no cálculo de ruptura: SIM ou NÃO."
+      - name: local_entrada_id
+        description: Código do local de entrada padrão na loja.
+      - name: local_saida_id
+        description: Código do local de saída padrão na loja.
+      - name: estoque_loja
+        description: Saldo de estoque no salão da loja.
+      - name: estoque_deposito
+        description: Saldo de estoque no depósito.
+      - name: estoque_troca
+        description: Saldo de estoque em troca.
+      - name: estoque_almoxarifado
+        description: Saldo de estoque no almoxarifado.
+      - name: estoque_outro
+        description: Saldo de estoque em outros locais.
+      - name: estoque_empresa
+        description: Estoque total consolidado da loja (todos os locais).
+      - name: qtd_pedido_compra_pendente
+        description: Quantidade em pedidos de compra ainda não recebidos.
+      - name: qtd_pedido_expedicao_pendente
+        description: Quantidade em pedidos de expedição ainda não entregues.
+      - name: qtd_recebimento_transito
+        description: Quantidade em trânsito de recebimento.
+      - name: media_venda_diaria
+        description: Média de venda diária geral (inclui períodos promocionais).
+      - name: media_venda_diaria_fora_promo
+        description: Média de venda diária fora de promoção.
+      - name: dia_estoque
+        description: >
+          Dias de estoque calculado — estoque_loja ÷ media_venda_diaria.
+          NULL quando média é zero ou nula.
+      - name: ultimo_custo_liquido
+        description: Último custo líquido registrado para o produto na loja.
+      - name: ultimo_valor_nf
+        description: Último valor de NF de entrada do produto na loja.
+      - name: dta_ultima_movimentacao
+        description: Data da última movimentação de estoque (qualquer tipo).
+      - name: dta_ultima_movimentacao_entrada
+        description: Data da última movimentação de entrada de estoque.
+      - name: dta_ultima_movimentacao_saida
+        description: Data da última movimentação de saída de estoque.
+      - name: dta_ultima_entrada
+        description: Data da última entrada por nota fiscal (compra).
+      - name: qtd_ultima_entrada
+        description: Quantidade da última entrada por NF.
+      - name: dta_ultima_compra
+        description: Data do último pedido de compra emitido.
+      - name: qtd_ultima_compra
+        description: Quantidade do último pedido de compra.
+      - name: dia_sem_compra
+        description: Dias corridos desde a última compra (CURRENT_DATE - dta_ultima_compra). NULL quando nunca houve compra.
+      - name: dta_ultima_venda
+        description: Data da última venda do produto nesta loja.
+      - name: qtd_ultima_venda
+        description: Quantidade da última venda.
+      - name: dia_sem_venda
+        description: Dias corridos desde a última venda (CURRENT_DATE - dta_ultima_venda). NULL quando nunca houve venda.
+      - name: dia_sem_venda_desde_ultima_entrada
+        description: >
+          Dias corridos desde o maior entre dta_ultima_venda e
+          dta_ultima_movimentacao_entrada — proxy de inatividade após o último
+          recebimento. NULL quando ambas as datas são nulas.
+      - name: dta_ultimo_inventario
+        description: Data do último inventário físico do produto na loja.
+      - name: qtd_ultimo_inventario
+        description: Quantidade contada no último inventário físico.
+      - name: carregado_em
+        description: Timestamp da última carga do pipeline Hop.
+        data_tests:
+          - not_null
+
+  - name: dim_fornecedor_info
+    description: >
+      Dimensão de fornecedores. Uma linha por fornecedor (DISTINCT ON fornecedor_id
+      de stg_map_famfornec), enriquecida com dados cadastrais de ge_pessoa e
+      condições comerciais de maf_fornecdivisao (prioriza divisão 1).
+      Cobre todos os fornecedores vinculados a alguma família, independente
+      de status ativo/inativo.
+    columns:
+      - name: fornecedor_id
+        description: Chave primária — código do fornecedor (FK para ge_pessoa.pessoa_id).
+        data_tests:
+          - not_null
+          - unique
+      - name: nome_razao
+        description: Razão social do fornecedor (UPPER).
+      - name: nome_razao_id_nome
+        description: Chave de exibição — lpad(fornecedor_id,5,'0') || ' - ' || nome_razao.
+      - name: nome_fantasia
+        description: Nome fantasia do fornecedor (UPPER). Pode ser NULL.
+      - name: status
+        description: "Status do cadastro em ge_pessoa: ATIVO ou INATIVO."
+      - name: pessoa_tipo
+        description: "Tipo de pessoa: FÍSICA ou JURÍDICA."
+      - name: logradouro
+        description: Logradouro do endereço (UPPER).
+      - name: numero
+        description: Número do logradouro (UPPER).
+      - name: bairro
+        description: Bairro (UPPER).
+      - name: cidade
+        description: Cidade (UPPER).
+      - name: cep
+        description: CEP (UPPER).
+      - name: uf
+        description: UF (UPPER).
+      - name: pais
+        description: País (UPPER).
+      - name: endereco
+        description: Endereço completo concatenado.
+      - name: cnpj_cpf
+        description: CNPJ ou CPF formatado com LPAD.
+      - name: inscricao_rg
+        description: Inscrição estadual (jurídica) ou RG (física).
+      - name: email
+        description: E-mail de contato (UPPER).
+      - name: contribuinte_icms
+        description: "Indica se é contribuinte de ICMS: SIM ou NÃO."
+      - name: produtor_rural
+        description: "Indica se é produtor rural: SIM ou NÃO."
+      - name: contribuinte_ipi
+        description: "Indica se é contribuinte de IPI: SIM ou NÃO."
+      - name: cnae
+        description: Código CNAE da atividade econômica (UPPER).
+      - name: fornecedor_principal
+        description: "Indica se é o fornecedor principal de alguma família: SIM ou NÃO."
+      - name: indeniza_avaria
+        description: "Indica se o fornecedor indeniza avaria: SIM, NÃO ou NÃO INFORMADO."
+      - name: prazo_medio_visita_representante
+        description: Prazo médio de visita do representante (dias).
+      - name: prazo_med_entrega
+        description: Prazo médio de entrega (dias).
+      - name: prazo_med_atraso
+        description: Prazo médio de atraso na entrega (dias).
+      - name: prazo_pagamento
+        description: Prazo de pagamento (dias).
+      - name: condicao_pagamento_id
+        description: Código da condição de pagamento para devolução.
+      - name: forma_pagamento_id
+        description: Código da forma de pagamento para devolução.
+      - name: divisao_id
+        description: Divisão comercial da qual os dados de maf_fornecdivisao foram selecionados.
+      - name: carregado_em
+        description: Timestamp da última carga do pipeline Hop.
+        data_tests:
+          - not_null

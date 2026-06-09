@@ -1,0 +1,900 @@
+version: 2
+
+models:
+  # ---------------------------------------------------------------------------
+  # Vendas PDV
+  # ---------------------------------------------------------------------------
+  - name: stg_maxv_abcdistribbase
+    description: >
+      Staging de vendas PDV. Cast e renomeação das colunas de raw.maxv_abcdistribbase.
+      Deriva dta_venda, hora_venda e nro_documento a partir das colunas brutas.
+      Sem filtros — o filtro de codgeraloper é aplicado no fato_venda.
+    columns:
+      - name: dta_hora_venda
+        description: Timestamp truncado à hora da transação.
+        data_tests:
+          - not_null
+      - name: dta_venda
+        description: Data da venda (derivada de dta_hora_venda).
+        data_tests:
+          - not_null
+      - name: hora_venda
+        description: Hora da venda (derivada de dta_hora_venda).
+        data_tests:
+          - not_null
+      - name: nro_empresa
+        description: Código da loja.
+        data_tests:
+          - not_null
+      - name: nro_docto
+        description: Número do documento (cupom fiscal).
+        data_tests:
+          - not_null
+      - name: serie_docto
+        description: Série do documento fiscal.
+      - name: checkout
+        description: Número do checkout (caixa).
+      - name: nro_documento
+        description: Chave do documento — lpad(empresa,2)-lpad(docto,9)-serie-lpad(checkout,2).
+        data_tests:
+          - not_null
+      - name: nro_forma_pagto
+        description: Código da forma de pagamento.
+      - name: nro_segmento
+        description: Número do segmento da venda.
+      - name: cod_geral_oper
+        description: "Código da operação. Vendas válidas filtradas no fato_venda: 800, 810, 820, 828, 202."
+        data_tests:
+          - not_null
+      - name: seq_produto
+        description: Código sequencial do produto.
+        data_tests:
+          - not_null
+      - name: seq_operador
+        description: Código sequencial do operador de PDV.
+      - name: qtd_venda_item
+        description: Quantidade vendida do item.
+      - name: qtd_devol_item
+        description: Quantidade devolvida do item.
+      - name: qtd_venda_liq
+        description: Quantidade líquida — qtd_venda_item - qtd_devol_item.
+      - name: vlr_venda_item
+        description: Valor bruto da venda do item.
+      - name: vlr_devol_item
+        description: Valor da devolução do item.
+      - name: vlr_venda_liq
+        description: Valor líquido — vlr_venda_item - vlr_devol_item.
+      - name: vlr_desconto_item
+        description: Valor de desconto aplicado ao item.
+      - name: vlr_venda_promoc
+        description: Valor de venda promocional calculado pela função Oracle FC5.
+      - name: vlr_lucro
+        description: Lucro calculado pela função Oracle FC5_AbcDistribLucratividade.
+      - name: vlr_custo_bruto
+        description: Custo bruto calculado pela função Oracle FC5_AbcDistribCustoBruto.
+      - name: vlr_custo_liquido
+        description: Custo líquido calculado pela função Oracle FC5_AbcDistribCustoLiquido.
+      - name: loaded_at
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  # ---------------------------------------------------------------------------
+  # Empresa / lojas
+  # ---------------------------------------------------------------------------
+  - name: stg_max_empresa
+    description: >
+      Cast, renomeação e enriquecimento das colunas de raw.max_empresa.
+      Sem filtros — todas as lojas, ativas e inativas.
+      Formata CNPJ na staging (LPAD + dígito verificador). Converte indicadores
+      S/N de aberto_sabado e aberto_domingo para SIM/NÃO. Concatena endereço
+      completo. Inclui colunas CGO (códigos de operação por loja) para uso futuro
+      em fato_venda.
+    columns:
+      - name: empresa_id
+        description: Código único da loja (chave primária).
+        data_tests:
+          - not_null
+          - unique
+      - name: divisao_id
+        description: Código da divisão comercial da loja.
+      - name: razao_social
+        description: Razão social da empresa (UPPER).
+        data_tests:
+          - not_null
+      - name: pessoa_id_razao
+        description: Chave de exibição — lpad(pessoa_id,5,'0') || ' - ' || razao_social.
+      - name: logradouro
+        description: Logradouro do endereço da loja (UPPER).
+      - name: bairro
+        description: Bairro da loja (UPPER).
+      - name: cep
+        description: CEP da loja.
+      - name: cidade
+        description: Cidade da loja (UPPER).
+      - name: uf
+        description: UF da loja (UPPER).
+      - name: endereco
+        description: Endereço completo concatenado — logradouro, bairro, CEP, cidade, UF.
+      - name: cnpj
+        description: CNPJ formatado — lpad(nrocgc,12,'0') || '-' || lpad(digcgc,2,'0').
+      - name: inscricao_estadual
+        description: Inscrição estadual da empresa (UPPER).
+      - name: metro_quadrado
+        description: Área da loja em m².
+      - name: pessoa_id
+        description: Código da pessoa jurídica vinculada no ge_pessoa (FK).
+      - name: segmento_principal
+        description: Número do segmento principal da loja.
+      - name: aberto_sabado
+        description: "Indica se a loja abre aos sábados: SIM ou NÃO."
+      - name: aberto_domingo
+        description: "Indica se a loja abre aos domingos: SIM ou NÃO."
+      - name: meta_margem_lucro
+        description: Meta gerencial de margem de lucro.
+      - name: meta_dia_estoque
+        description: Meta gerencial de dias de estoque.
+      - name: status_empresa
+        description: "Status da loja: ATIVA ou INATIVA."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['ATIVA', 'INATIVA']
+      - name: dta_fechamento_fiscal
+        description: Data do fechamento fiscal da loja.
+      - name: inicio_estoque
+        description: Data de início do controle de estoque.
+      - name: nsu_nf
+        description: Número sequencial único de NF.
+      - name: cgo_baixa_saida_pdv
+        description: CGO de baixa de saída PDV.
+      - name: cgo_transf_loc_ori
+        description: CGO de transferência — local de origem.
+      - name: cgo_transf_loc_dest
+        description: CGO de transferência — local de destino.
+      - name: cgo_baixa_producao
+        description: CGO de baixa de produção.
+      - name: cgo_entr_producao
+        description: CGO de entrada de produção.
+      - name: cgo_baixa_inventario
+        description: CGO de baixa de inventário.
+      - name: cgo_entr_inventario
+        description: CGO de entrada de inventário.
+      - name: cgo_emiss_nf_venda
+        description: CGO de emissão de NF de venda.
+      - name: cgo_entr_transf
+        description: CGO de entrada de transferência.
+      - name: cgo_dev_fornec
+        description: CGO de devolução a fornecedor.
+      - name: cgo_entr_transf_prod
+        description: CGO de entrada de transferência de produção.
+      - name: cgo_sai_transf_prod
+        description: CGO de saída de transferência de produção.
+      - name: cgo_baixa_perda
+        description: CGO de baixa de perda.
+      - name: cgo_ajuste_custo
+        description: CGO de ajuste de custo.
+      - name: cgo_ajuste_custo_redu
+        description: CGO de ajuste de custo redutivo.
+      - name: carregado_em
+        description: Timestamp da última carga via Hop.
+        data_tests:
+          - not_null
+
+  - name: stg_vw_pdv
+    description: >
+      Cast e renomeação das colunas de raw.vw_pdv. Converte o indicador de ativo
+      de S/N para SIM/NÃO. Contém todos os checkouts por loja e segmento —
+      dim_empresa_info agrega total_pdv_ativo filtrando pdv_ativo = 'SIM'.
+    columns:
+      - name: empresa_id
+        description: Código da loja (FK para stg_max_empresa).
+        data_tests:
+          - not_null
+      - name: checkout_id
+        description: Número do checkout (caixa) na loja.
+        data_tests:
+          - not_null
+      - name: segmento_id
+        description: Número do segmento ao qual o checkout pertence.
+      - name: pdv_ativo
+        description: "Indica se o checkout está ativo: SIM ou NÃO."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['SIM', 'NÃO']
+      - name: carregado_em
+        description: Timestamp da última carga via Hop.
+        data_tests:
+          - not_null
+
+  # ---------------------------------------------------------------------------
+  # Produto e hierarquia
+  # ---------------------------------------------------------------------------
+  - name: stg_map_produto
+    description: >
+      Cast e renomeação das colunas de raw.map_produto. Sem filtros — inclui todos
+      os produtos, ativos e inativos. Status de compra por loja está em
+      mrl_produtoempresa.statuscompra, não nesta tabela.
+    columns:
+      - name: produto_id
+        description: Código sequencial do produto (chave primária).
+        data_tests:
+          - not_null
+          - unique
+      - name: produto
+        description: Descrição completa do produto (UPPER).
+        data_tests:
+          - not_null
+      - name: produto_id_nome
+        description: Chave de exibição — lpad(produto_id,6,'0') || ' - ' || produto.
+        data_tests:
+          - not_null
+      - name: familia_id
+        description: Código da família (FK para stg_map_familia).
+        data_tests:
+          - not_null
+      - name: data_inclusao
+        description: Data de inclusão do produto no cadastro.
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  - name: stg_map_familia
+    description: >
+      Cast e renomeação das colunas de raw.map_familia. Converte pesavel e
+      permite_decimal de S/N para SIM/NÃO.
+    columns:
+      - name: familia_id
+        description: Código sequencial da família (chave primária).
+        data_tests:
+          - not_null
+          - unique
+      - name: familia
+        description: Descrição da família (UPPER).
+        data_tests:
+          - not_null
+      - name: familia_id_nome
+        description: Chave de exibição — lpad(familia_id,6,'0') || ' - ' || familia.
+        data_tests:
+          - not_null
+      - name: marca_id
+        description: Código da marca (FK para stg_map_marca).
+      - name: pesavel
+        description: "Indica se os produtos da família são pesáveis: SIM ou NÃO."
+      - name: permite_decimal
+        description: "Indica se a família permite quantidade decimal: SIM ou NÃO."
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  - name: stg_map_marca
+    description: Cast e renomeação das colunas de raw.map_marca.
+    columns:
+      - name: marca_id
+        description: Código sequencial da marca (chave primária).
+        data_tests:
+          - not_null
+          - unique
+      - name: marca
+        description: Descrição da marca (UPPER).
+        data_tests:
+          - not_null
+      - name: marca_id_nome
+        description: Chave de exibição — lpad(marca_id,4,'0') || ' - ' || marca.
+      - name: status_marca
+        description: "Status da marca: ATIVA, INATIVA ou NÃO INFORMADA."
+        data_tests:
+          - not_null
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  - name: stg_map_prodcodigo
+    description: >
+      Cast e renomeação das colunas de raw.map_prodcodigo. Decodifica tipcodigo
+      de letras (E, B, I, F, D) para rótulos descritivos (EAN, BALANÇA, etc.).
+      Um produto pode ter múltiplos códigos dependendo da embalagem e tipo.
+    columns:
+      - name: produto_id
+        description: Código sequencial do produto (FK para stg_map_produto).
+        data_tests:
+          - not_null
+      - name: qtd_embalagem
+        description: Quantidade da embalagem associada ao código.
+      - name: tipo_codigo
+        description: "Tipo do código: EAN, BALANÇA, TRANSIÇÃO, FORNECEDOR, DUN."
+        data_tests:
+          - not_null
+      - name: codigo_acesso
+        description: Código de barras / acesso do produto. Pode ser NULL — filtro aplicado no mart.
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  - name: stg_etlv_categoria
+    description: >
+      Hierarquia de categorias por família (até 3 níveis: categoria → subcategoria → grupo),
+      deduplicada para garantir uma linha por familia_id.
+      Prioriza divisao_id = 1; quando a família não existe na divisão 1, usa a menor
+      divisão disponível — evitando perda de dados silenciosa.
+      Inclui colunas _id_nome pré-formatadas (lpad + descrição) e flag perecivel.
+    columns:
+      - name: familia_id
+        description: Código da família — chave única após deduplicação.
+        data_tests:
+          - not_null
+          - unique
+      - name: divisao_id
+        description: Divisão da qual esta linha foi selecionada (1 quando disponível).
+        data_tests:
+          - not_null
+      - name: sk_categoria
+        description: Chave surrogate da categoria completa no Consinco.
+      - name: categoria_completa
+        description: Descrição concatenada dos 3 níveis da hierarquia (UPPER).
+      - name: categoria_completa_id_nome
+        description: Chave de exibição da categoria completa — lpad(sk,4,'0') || ' - ' || categoria_completa.
+      - name: categoria_id
+        description: Código da categoria nível 1.
+      - name: categoria
+        description: Descrição da categoria nível 1 (UPPER).
+      - name: categoria_id_nome
+        description: Chave de exibição nível 1 — lpad(categoria_id,4,'0') || ' - ' || categoria.
+      - name: subcategoria_id
+        description: Código da categoria nível 2.
+      - name: subcategoria
+        description: Descrição da categoria nível 2 (UPPER).
+      - name: subcategoria_id_nome
+        description: Chave de exibição nível 2 — lpad(subcategoria_id,4,'0') || ' - ' || subcategoria.
+      - name: grupo_id
+        description: Código da categoria nível 3.
+      - name: grupo
+        description: Descrição da categoria nível 3 (UPPER).
+      - name: grupo_id_nome
+        description: Chave de exibição nível 3 — lpad(grupo_id,4,'0') || ' - ' || grupo.
+      - name: perecivel
+        description: "Classifica a família como PERECÍVEL ou NÃO PERECÍVEL com base nos seq_categoria_id da divisão."
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  # ---------------------------------------------------------------------------
+  # Pessoas
+  # ---------------------------------------------------------------------------
+  - name: stg_ge_pessoa
+    description: >
+      Cast, renomeação e enriquecimento das colunas de raw.ge_pessoa.
+      Cobre pessoas físicas e jurídicas — fornecedores, compradores, operadores e
+      qualquer entidade registrada no Consinco. Formata CNPJ/CPF com LPAD e dígito
+      verificador separado. Concatena endereço completo em uma coluna texto.
+    columns:
+      - name: pessoa_id
+        description: Código sequencial da pessoa (chave primária).
+        data_tests:
+          - not_null
+          - unique
+      - name: nome_razao
+        description: Nome ou razão social (UPPER).
+        data_tests:
+          - not_null
+      - name: nome_razao_id_nome
+        description: Chave de exibição — lpad(pessoa_id,5,'0') || ' - ' || nome_razao.
+      - name: nome_fantasia
+        description: Nome fantasia (UPPER). Pode ser NULL para pessoas físicas.
+      - name: status
+        description: "Status do cadastro: ATIVO ou INATIVO."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['ATIVO', 'INATIVO']
+      - name: pessoa_tipo
+        description: "Tipo de pessoa: FÍSICA ou JURÍDICA."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['FÍSICA', 'JURÍDICA']
+      - name: logradouro
+        description: Logradouro do endereço (UPPER).
+      - name: numero
+        description: Número do logradouro (UPPER).
+      - name: bairro
+        description: Bairro (UPPER).
+      - name: cidade
+        description: Cidade (UPPER).
+      - name: cep
+        description: CEP (UPPER).
+      - name: uf
+        description: UF do endereço (UPPER).
+      - name: pais
+        description: País (UPPER).
+      - name: endereco
+        description: Endereço completo concatenado — logradouro, número, bairro, CEP, cidade, UF, país.
+      - name: cnpj_cpf
+        description: CNPJ (12 dígitos + 2 verificadores) ou CPF (9 dígitos + 2 verificadores) formatado com LPAD.
+      - name: inscricao_rg
+        description: Inscrição estadual (jurídica) ou RG (física).
+      - name: email
+        description: E-mail de contato (UPPER).
+      - name: contribuinte_icms
+        description: "Indica se é contribuinte de ICMS: SIM ou NÃO."
+      - name: produtor_rural
+        description: "Indica se é produtor rural: SIM ou NÃO."
+      - name: contribuinte_ipi
+        description: "Indica se é contribuinte de IPI: SIM ou NÃO."
+      - name: cnae
+        description: Código CNAE da atividade econômica (UPPER).
+      - name: data_inclusao
+        description: Data de inclusão do cadastro.
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  # ---------------------------------------------------------------------------
+  # Promoções
+  # ---------------------------------------------------------------------------
+  - name: stg_mrl_promocao
+    description: >
+      Cast e renomeação das colunas de raw.mrl_promocao. Grain: promocao_id ×
+      empresa_id × segmento_id × central_loja. Cabeçalho das promoções com nome,
+      tipo, vigência (dta_inicio/dta_fim) e indicadores. Sem filtros — todas as
+      promoções, vigentes e históricas. Modelos dw filtram por dta_inicio <=
+      CURRENT_DATE AND dta_fim >= CURRENT_DATE para promoções ativas.
+    columns:
+      - name: promocao_id
+        description: Código sequencial da promoção.
+        data_tests:
+          - not_null
+      - name: empresa_id
+        description: Código da loja (FK para stg_max_empresa).
+        data_tests:
+          - not_null
+      - name: segmento_id
+        description: Número do segmento. Join com stg_max_empresa.segmento_principal para isolar o segmento correto.
+        data_tests:
+          - not_null
+      - name: divisao_id
+        description: Divisão comercial da promoção.
+      - name: central_loja
+        description: "Origem da promoção: C = central, L = loja."
+      - name: promocao
+        description: Nome/descrição da promoção (UPPER).
+      - name: tipo_promoc
+        description: Tipo da promoção.
+      - name: dta_inicio
+        description: Data de início da vigência da promoção.
+        data_tests:
+          - not_null
+      - name: dta_fim
+        description: Data de fim da vigência da promoção.
+        data_tests:
+          - not_null
+      - name: ind_prevalece_preco
+        description: "Indica se o preço promocional prevalece sobre o normal: SIM ou NÃO."
+      - name: ind_segmento_princ
+        description: "Indica se a promoção é do segmento principal: SIM ou NÃO."
+      - name: encarte_id
+        description: Código do encarte vinculado à promoção. NULL quando não é encarte.
+      - name: dta_geracao
+        description: Data de geração da promoção.
+      - name: dta_hora_inclusao
+        description: Timestamp de inclusão da promoção.
+      - name: dta_hora_alteracao
+        description: Timestamp da última alteração.
+      - name: usuario_inclusao
+        description: Usuário que incluiu a promoção.
+      - name: usuario_alteracao
+        description: Usuário da última alteração.
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  - name: stg_mrl_promocaoitem
+    description: >
+      Cast e renomeação das colunas de raw.mrl_promocaoitem. Grain: produto_id ×
+      qtd_embalagem × promocao_id × empresa_id × segmento_id × central_loja
+      (qtdembalagem = 1 filtrado na extração Oracle). Itens de promoção com preço
+      promocional, desconto, datas de vigência por item (sobrescrevem o cabeçalho
+      quando preenchidas) e métricas de vendas realizadas na promoção. Histórico
+      completo — sem filtro de vigência na staging.
+    columns:
+      - name: produto_id
+        description: Código sequencial do produto (FK para stg_map_produto).
+        data_tests:
+          - not_null
+      - name: qtd_embalagem
+        description: Quantidade da embalagem. Sempre 1 na extração.
+        data_tests:
+          - not_null
+      - name: promocao_id
+        description: Código da promoção (FK para stg_mrl_promocao).
+        data_tests:
+          - not_null
+      - name: empresa_id
+        description: Código da loja (FK para stg_max_empresa).
+        data_tests:
+          - not_null
+      - name: segmento_id
+        description: Número do segmento.
+        data_tests:
+          - not_null
+      - name: central_loja
+        description: "Origem: C = central, L = loja."
+      - name: preco_promocional
+        description: Preço do produto nesta promoção.
+      - name: preco_sugerido
+        description: Preço sugerido para a promoção.
+      - name: status
+        description: "Status do item na promoção: ATIVO, INATIVO ou NÃO INFORMADO."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['ATIVO', 'INATIVO', 'NÃO INFORMADO']
+      - name: perc_desconto
+        description: Percentual de desconto aplicado na promoção.
+      - name: dta_inicio_item
+        description: Data de início do item na promoção. Quando preenchida, sobrescreve dta_inicio do cabeçalho.
+      - name: dta_fim_item
+        description: Data de fim do item na promoção. Quando preenchida, sobrescreve dta_fim do cabeçalho.
+      - name: qtd_prevista_venda
+        description: Quantidade planejada de venda para a promoção.
+      - name: qtd_total_vendida
+        description: Quantidade efetivamente vendida durante a promoção.
+      - name: vlr_total_vendido
+        description: Valor total efetivamente vendido durante a promoção.
+      - name: media_venda_promoc
+        description: Média de venda durante a promoção.
+      - name: acordo_id
+        description: Número do acordo comercial vinculado. NULL quando sem acordo.
+      - name: dta_inclusao
+        description: Data de inclusão do item na promoção.
+      - name: dta_geracao
+        description: Data de geração do item.
+      - name: dta_hora_alteracao
+        description: Timestamp da última alteração.
+      - name: usuario_alteracao
+        description: Usuário da última alteração.
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  # ---------------------------------------------------------------------------
+  # Produto × Empresa × Segmento (preços e status de venda)
+  # ---------------------------------------------------------------------------
+  - name: stg_mrl_prodempseg
+    description: >
+      Cast e renomeação das colunas de raw.mrl_prodempseg. Grain completo: produto_id
+      × qtd_embalagem × segmento_id × empresa_id (~1,5M linhas). Sem filtros —
+      cobre todas as embalagens e todos os segmentos. Modelos dw consumidores devem
+      filtrar qtd_embalagem = 1 e usar segmento_id = segmento_principal da loja.
+      Cobre status de venda, os três preços normais (base, gerado, válido), preços
+      promocionais, margem, custo para precificação, motivos de alteração e datas
+      do ciclo de preço.
+    columns:
+      - name: produto_id
+        description: Código sequencial do produto (FK para stg_map_produto).
+        data_tests:
+          - not_null
+      - name: qtd_embalagem
+        description: Quantidade da embalagem. Filtrar = 1 nos modelos dw para obter preço unitário.
+        data_tests:
+          - not_null
+      - name: segmento_id
+        description: Número do segmento comercial. Join com stg_max_empresa.segmento_principal para isolar o segmento correto por loja.
+        data_tests:
+          - not_null
+      - name: empresa_id
+        description: Código da loja (FK para stg_max_empresa).
+        data_tests:
+          - not_null
+      - name: status_venda
+        description: "Status de venda do produto na loja: ATIVO, INATIVO ou NÃO INFORMADO."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['ATIVO', 'INATIVO', 'NÃO INFORMADO']
+      - name: preco_base_normal
+        description: Preço base normal (referência comercial).
+      - name: preco_ger_normal
+        description: Preço gerado praticado normal.
+      - name: preco_valido_normal
+        description: Preço válido atual normal — o preço efetivamente em vigor.
+      - name: preco_ger_promoc
+        description: Preço gerado em promoção.
+      - name: preco_valido_promoc
+        description: Preço válido em promoção.
+      - name: preco_emitido_promoc
+        description: Preço emitido para promoção.
+      - name: margem_lucro
+        description: Percentual de margem de lucro calculado pelo Consinco.
+      - name: custo_liq_precificacao
+        description: Custo líquido base usado no cálculo do preço do dia.
+      - name: motivo_preco_base
+        description: Motivo da última alteração do preço base (auditoria).
+      - name: motivo_preco_gerado
+        description: Motivo da última alteração do preço gerado (auditoria).
+      - name: motivo_preco_valido
+        description: Motivo da última alteração do preço válido (auditoria).
+      - name: dta_geracao_preco
+        description: Data em que o preço foi gerado.
+      - name: dta_validacao_preco
+        description: Data em que o preço foi validado.
+      - name: dta_alteracao
+        description: Data da última alteração de preço.
+      - name: dta_hora_alteracao
+        description: Timestamp da última alteração de preço.
+      - name: dta_hora_alt_status_venda
+        description: Timestamp da última alteração do status de venda.
+      - name: preco_ger_programado
+        description: Preço gerado agendado para vigorar em data futura.
+      - name: dta_preco_programado
+        description: Data de ativação do preço programado.
+      - name: ind_revisao_preco
+        description: "Indica se o produto está em processo de revisão de preço: SIM ou NÃO."
+      - name: promocao_id
+        description: Código da promoção vinculada (FK para mrlv_baseprodpromoc). NULL quando sem promoção.
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  # ---------------------------------------------------------------------------
+  # Produto × Empresa (estoque e parâmetros por loja)
+  # ---------------------------------------------------------------------------
+  - name: stg_mrl_produtoempresa
+    description: >
+      Cast e renomeação das colunas de raw.mrl_produtoempresa. Grain: produto_id ×
+      empresa_id. Cobre status de compra, posições de estoque (loja, depósito,
+      troca, almoxarifado), médias de venda diária, custos (último custo líquido e
+      valor de NF), pedidos pendentes e datas de movimentação / compra / venda /
+      inventário. Inclui flag gera_ruptura convertida de S/N para SIM/NÃO.
+      Sem filtros — todas as combinações ativas e inativas.
+    columns:
+      - name: produto_id
+        description: Código sequencial do produto (FK para stg_map_produto). Compõe a chave composta.
+        data_tests:
+          - not_null
+      - name: empresa_id
+        description: Código da loja (FK para stg_max_empresa). Compõe a chave composta.
+        data_tests:
+          - not_null
+      - name: status_compra
+        description: "Status de compra do produto na loja: ATIVO, INATIVO ou NÃO INFORMADO."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['ATIVO', 'INATIVO', 'NÃO INFORMADO']
+      - name: local_entrada_id
+        description: Código do local de entrada padrão (FK para mrl_local).
+      - name: local_saida_id
+        description: Código do local de saída padrão (FK para mrl_local).
+      - name: estoque_loja
+        description: Saldo de estoque no salão da loja.
+      - name: estoque_deposito
+        description: Saldo de estoque no depósito.
+      - name: estoque_troca
+        description: Saldo de estoque em troca.
+      - name: estoque_almoxarifado
+        description: Saldo de estoque no almoxarifado.
+      - name: estoque_outro
+        description: Saldo de estoque em outros locais.
+      - name: estoque_empresa
+        description: Estoque total consolidado da loja (todos os locais).
+      - name: qtd_pedido_compra_pendente
+        description: Quantidade pendente em pedidos de compra ainda não recebidos.
+      - name: qtd_pedido_expedicao_pendente
+        description: Quantidade pendente em pedidos de expedição ainda não entregues.
+      - name: qtd_recebimento_transito
+        description: Quantidade em trânsito de recebimento.
+      - name: media_venda_diaria
+        description: Média de venda diária geral (inclui períodos promocionais).
+      - name: media_venda_diaria_fora_promo
+        description: Média de venda diária fora de promoção.
+      - name: ultimo_custo_liquido
+        description: Último custo líquido registrado para o produto na loja.
+      - name: ultimo_valor_nf
+        description: Último valor de nota fiscal de entrada do produto na loja.
+      - name: gera_ruptura
+        description: "Indica se o produto entra no cálculo de ruptura: SIM ou NÃO."
+      - name: dta_ultima_movimentacao
+        description: Data da última movimentação de estoque (qualquer tipo).
+      - name: dta_ultima_movimentacao_entrada
+        description: Data da última movimentação de entrada de estoque (qualquer tipo).
+      - name: dta_ultima_movimentacao_saida
+        description: Data da última movimentação de saída de estoque.
+      - name: dta_ultima_entrada
+        description: Data da última entrada por nota fiscal (compra).
+      - name: qtd_ultima_entrada
+        description: Quantidade da última entrada por NF.
+      - name: dta_ultima_compra
+        description: Data do último pedido de compra emitido.
+      - name: qtd_ultima_compra
+        description: Quantidade do último pedido de compra.
+      - name: dta_ultima_venda
+        description: Data da última venda do produto nesta loja.
+      - name: qtd_ultima_venda
+        description: Quantidade da última venda.
+      - name: dta_ultimo_inventario
+        description: Data do último inventário físico do produto na loja.
+      - name: qtd_ultimo_inventario
+        description: Quantidade contada no último inventário físico.
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  # ---------------------------------------------------------------------------
+  # Fornecedor
+  # ---------------------------------------------------------------------------
+  - name: stg_maf_fornecdivisao
+    description: >
+      Cast e renomeação das colunas de raw.maf_fornecdivisao. Contém condições
+      comerciais do fornecedor por divisão: prazos de visita, entrega e pagamento,
+      classificação ABC. Deduplicado em dim_fornecedor_info para uma linha por
+      fornecedor (prioriza divisão 1).
+    columns:
+      - name: divisao_id
+        description: Número da divisão comercial.
+        data_tests:
+          - not_null
+      - name: fornecedor_id
+        description: Código do fornecedor (chave natural — FK para ge_pessoa via pessoa_id).
+        data_tests:
+          - not_null
+      - name: prazo_medio_visita_representante
+        description: Prazo médio de visita do representante (dias).
+      - name: prazo_med_entrega
+        description: Prazo médio de entrega (dias).
+      - name: prazo_med_atraso
+        description: Prazo médio de atraso na entrega (dias).
+      - name: prazo_pagamento
+        description: Prazo de pagamento (dias).
+      - name: condicao_pagamento_id
+        description: Código da condição de pagamento para devolução.
+      - name: forma_pagamento_id
+        description: Código da forma de pagamento para devolução.
+      - name: status_fornecedor
+        description: "Status geral do fornecedor: ATIVO, INATIVO ou OUTRO."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['ATIVO', 'INATIVO', 'OUTRO']
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  # ---------------------------------------------------------------------------
+  # Família × Fornecedor
+  # ---------------------------------------------------------------------------
+  - name: stg_map_famfornec
+    description: >
+      Vínculo entre família de produto e fornecedor. Converte indicadores S/N
+      para SIM/NÃO. Usado em dim_produto_info para expor o fornecedor principal
+      por família.
+    columns:
+      - name: familia_id
+        description: Código da família (FK para stg_map_familia).
+        data_tests:
+          - not_null
+      - name: fornecedor_id
+        description: Código do fornecedor (FK para maf_fornecdivisao).
+        data_tests:
+          - not_null
+      - name: fornecedor_principal
+        description: "Indica se é o fornecedor principal da família: SIM ou NÃO."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['SIM', 'NÃO']
+      - name: indeniza_avaria
+        description: "Indica se o fornecedor indeniza avaria: SIM, NÃO ou NÃO INFORMADO."
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  # ---------------------------------------------------------------------------
+  # Segmento
+  # ---------------------------------------------------------------------------
+  - name: stg_mad_segmento
+    description: >
+      Cast e renomeação das colunas de raw.mad_segmento. Segmentos comerciais por
+      divisão. Usado em dim_empresa_info para expor segmento_id_nome por loja.
+    columns:
+      - name: divisao_id
+        description: Número da divisão comercial.
+        data_tests:
+          - not_null
+      - name: segmento_id
+        description: Número do segmento (chave natural).
+        data_tests:
+          - not_null
+      - name: segmento
+        description: Descrição do segmento (UPPER).
+        data_tests:
+          - not_null
+      - name: segmento_id_nome
+        description: Chave de exibição — lpad(segmento_id,3,'0') || ' - ' || segmento.
+      - name: status
+        description: "Status do segmento: ATIVO ou INATIVO."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['ATIVO', 'INATIVO']
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  # ---------------------------------------------------------------------------
+  # Domínios de pedido de compras
+  # ---------------------------------------------------------------------------
+  - name: stg_madv_origempedido
+    description: Domínio de origens de pedido de compras.
+    columns:
+      - name: origempedido_id
+        description: Código da origem do pedido (chave primária).
+        data_tests:
+          - not_null
+          - unique
+      - name: origempedido
+        description: Descrição da origem do pedido (UPPER).
+        data_tests:
+          - not_null
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  - name: stg_madv_situacaoped
+    description: Domínio de situações de pedido de compras.
+    columns:
+      - name: situacaoped_id
+        description: Código da situação do pedido (chave primária).
+        data_tests:
+          - not_null
+          - unique
+      - name: situacaoped
+        description: Descrição da situação do pedido (UPPER).
+        data_tests:
+          - not_null
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  - name: stg_madv_tippedido
+    description: Domínio de tipos de pedido de compras.
+    columns:
+      - name: tippedido_id
+        description: Código do tipo de pedido (chave primária).
+        data_tests:
+          - not_null
+          - unique
+      - name: tippedido
+        description: Descrição do tipo de pedido (UPPER).
+        data_tests:
+          - not_null
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null

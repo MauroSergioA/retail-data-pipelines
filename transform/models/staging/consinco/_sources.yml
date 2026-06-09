@@ -1,0 +1,600 @@
+version: 2
+
+sources:
+  - name: consinco
+    description: >
+      Tabelas extraídas do ERP Consinco (Oracle JDBC) via Apache Hop e carregadas
+      no schema bronze do PostgreSQL (database superque). Hop é responsável pela
+      extração e carga (E+L); dbt consome essas tabelas como fontes e aplica toda
+      a transformação.
+    schema: bronze
+    tables:
+
+      # -------------------------------------------------------------------------
+      # Empresa / lojas
+      # -------------------------------------------------------------------------
+      - name: max_empresa
+        description: >
+          Cadastro de empresas e lojas da rede Superque. Contém dados cadastrais,
+          metas operacionais e códigos de operação (CGO) por loja.
+        columns:
+          - name: nroempresa
+            description: Código único da loja no Consinco.
+          - name: status
+            description: "Status da loja: A = ativa, I = inativa."
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
+      # Produto e hierarquia
+      # -------------------------------------------------------------------------
+      - name: map_produto
+        description: >
+          Cadastro de produtos do Consinco. Contém descrição e vínculo com família.
+          Não possui coluna STATUS — o status de ativação do produto por loja está
+          em mrl_produtoempresa.statuscompra.
+        columns:
+          - name: seqproduto
+            description: Código sequencial do produto (chave primária).
+          - name: desccompleta
+            description: Descrição completa do produto.
+          - name: seqfamilia
+            description: Código da família (FK para map_familia).
+          - name: dtahorinclusao
+            description: Data/hora de inclusão do produto no cadastro.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: map_familia
+        description: >
+          Cadastro de famílias de produtos. Agrupa produtos por características
+          comuns (pesável, casas decimais). Vincula família à marca.
+        columns:
+          - name: seqfamilia
+            description: Código sequencial da família (chave primária).
+          - name: familia
+            description: Descrição da família.
+          - name: seqmarca
+            description: Código da marca (FK para map_marca).
+          - name: pesavel
+            description: "Indica se os produtos da família são pesáveis: S/N."
+          - name: pmtdecimal
+            description: Casas decimais para quantidade dos produtos da família.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: map_marca
+        description: Cadastro de marcas de produtos.
+        columns:
+          - name: seqmarca
+            description: Código sequencial da marca (chave primária).
+          - name: marca
+            description: Descrição da marca.
+          - name: status
+            description: Status da marca.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: map_prodcodigo
+        description: >
+          Códigos de acesso (EAN/barras) por produto e embalagem.
+          Um produto pode ter múltiplos códigos dependendo da embalagem.
+        columns:
+          - name: seqproduto
+            description: Código sequencial do produto (FK para map_produto).
+          - name: qtdembalagem
+            description: Quantidade da embalagem associada ao código.
+          - name: tipcodigo
+            description: Tipo do código (EAN13, EAN8, interno, etc.).
+          - name: codacesso
+            description: Código de barras/acesso do produto.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: map_famembalagem
+        description: >
+          Embalagens disponíveis por família de produto. Define as unidades de
+          medida e quantidades de embalagem válidas para cada família.
+        columns:
+          - name: seqfamilia
+            description: Código da família (FK para map_familia).
+          - name: qtdembalagem
+            description: Quantidade de unidades da embalagem.
+          - name: embalagem
+            description: Descrição da embalagem (ex. UND, CX, FD).
+          - name: qtdunidemb
+            description: Quantidade de unidades dentro da embalagem.
+          - name: pesobruto
+            description: Peso bruto da embalagem em kg.
+          - name: status
+            description: Status da embalagem.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: map_famfornec
+        description: >
+          Vínculo entre família de produto e fornecedor. Indica o fornecedor
+          principal e se indeniza variação por família.
+        columns:
+          - name: seqfamilia
+            description: Código da família (FK para map_familia).
+          - name: seqfornecedor
+            description: Código do fornecedor (FK para maf_fornecdivisao).
+          - name: principal
+            description: "Indica se é o fornecedor principal da família: S/N."
+          - name: indindenizavaria
+            description: "Indica se o fornecedor indeniza avaria: S/N."
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: etlv_categoria
+        description: >
+          Hierarquia de categorias de produtos (até 3 níveis) por divisão.
+          Utilizada para navegação e análise por árvore de categorias.
+        columns:
+          - name: nrodivisao
+            description: Número da divisão comercial.
+          - name: seqfamilia
+            description: Código da família (FK para map_familia).
+          - name: skcategoria
+            description: Chave surrogate da categoria completa.
+          - name: categoriacompleta
+            description: Descrição concatenada dos 3 níveis da hierarquia.
+          - name: seqcategorian1
+            description: Código da categoria nível 1.
+          - name: categorian1
+            description: Descrição da categoria nível 1.
+          - name: seqcategorian2
+            description: Código da categoria nível 2.
+          - name: categorian2
+            description: Descrição da categoria nível 2.
+          - name: seqcategorian3
+            description: Código da categoria nível 3.
+          - name: categorian3
+            description: Descrição da categoria nível 3.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: mapv_ncm
+        description: >
+          Cadastro de NCM (Nomenclatura Comum do Mercosul) dos produtos.
+          Extraído com SELECT * — colunas documentadas ao construir o modelo staging.
+        columns:
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
+      # Produto × Empresa (estoque e parâmetros por loja)
+      # -------------------------------------------------------------------------
+      - name: mrl_produtoempresa
+        description: >
+          Parâmetros e posições de estoque de produto por loja. Chave composta
+          seqproduto + nroempresa. Contém médias de venda, datas de movimentação
+          e estoques por local. Colunas sufixadas _DEPRECIADA mantidas para
+          rastreabilidade histórica.
+        columns:
+          - name: seqproduto
+            description: Código sequencial do produto (FK para map_produto).
+          - name: nroempresa
+            description: Código da loja (FK para max_empresa).
+          - name: statuscompra
+            description: "Status de compra do produto na loja: A = ativo, I = inativo."
+          - name: estqloja
+            description: Saldo de estoque no salão da loja.
+          - name: estqdeposito
+            description: Saldo de estoque no depósito.
+          - name: estqtroca
+            description: Saldo de estoque em troca.
+          - name: estqempresa
+            description: Estoque total consolidado da empresa.
+          - name: medvdiageral
+            description: Média de venda diária geral (inclui períodos promocionais).
+          - name: medvdiaforapromoc
+            description: Média de venda diária fora de promoção.
+          - name: dtaultmovtacao
+            description: Data da última movimentação de estoque.
+          - name: dtaultmoventrada
+            description: Data da última movimentação de entrada.
+          - name: dtaultmovsaida
+            description: Data da última movimentação de saída.
+          - name: dtaultvenda
+            description: Data da última venda.
+      - name: mrl_prodempseg
+        description: >
+          Preços e status de venda por produto × segmento × empresa. Chave composta:
+          seqproduto + qtdembalagem + nrosegmento + nroempresa. Extração completa
+          (~1,5M linhas). O filtro qtdembalagem = 1 é aplicado nos modelos dw
+          consumidores. Carga full diária (truncate + insert) pois representa
+          estado atual — preços são atualizados in-place no Oracle.
+        columns:
+          - name: seqproduto
+            description: Código sequencial do produto (FK para map_produto).
+          - name: qtdembalagem
+            description: Quantidade da embalagem. Sempre 1 na extração.
+          - name: nrosegmento
+            description: Número do segmento comercial. Usar nrosegmentoprinc de max_empresa para o join correto.
+          - name: nroempresa
+            description: Código da loja (FK para max_empresa).
+          - name: statusvenda
+            description: "Status de venda do produto na loja: A = ativo, I = inativo."
+          - name: precobasenormal
+            description: Preço base normal (referência).
+          - name: precogernormal
+            description: Preço gerado praticado normal.
+          - name: precovalidnormal
+            description: Preço válido atual normal.
+          - name: precogerpromoc
+            description: Preço gerado em promoção.
+          - name: precovalidpromoc
+            description: Preço válido em promoção.
+          - name: margemlucroprodempseg
+            description: Percentual de margem de lucro calculado.
+          - name: vlrcustoliqdiaprecif
+            description: Custo líquido base usado na precificação do dia.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
+      # Promoções
+      # -------------------------------------------------------------------------
+      - name: mrl_promocao
+        description: >
+          Cabeçalho de promoções por empresa × segmento. Chave composta:
+          seqpromocao + nroempresa + nrosegmento + centralloja. Contém nome,
+          tipo, vigência (dtainicio/dtafim) e indicadores da promoção. Carga
+          full diária — promoções passadas não mudam; novas são adicionadas.
+        columns:
+          - name: seqpromocao
+            description: Código sequencial da promoção.
+          - name: nroempresa
+            description: Código da loja (FK para max_empresa).
+          - name: nrosegmento
+            description: Número do segmento. Usar nrosegmentoprinc de max_empresa para o join correto.
+          - name: centralloja
+            description: "Origem da promoção: C = central, L = loja."
+          - name: dtainicio
+            description: Data de início da vigência da promoção.
+          - name: dtafim
+            description: Data de fim da vigência da promoção.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: mrl_promocaoitem
+        description: >
+          Itens de promoção por produto × empresa × segmento. Chave composta:
+          seqproduto + qtdembalagem + seqpromocao + nroempresa + nrosegmento +
+          centralloja. Extração filtrada em QTDEMBALAGEM = 1. Contém preço
+          promocional, desconto, métricas de vendas na promoção e datas de
+          vigência por item (podem sobrescrever o cabeçalho). Carga full diária.
+        columns:
+          - name: seqproduto
+            description: Código sequencial do produto (FK para map_produto).
+          - name: qtdembalagem
+            description: Quantidade da embalagem. Sempre 1 na extração.
+          - name: seqpromocao
+            description: Código da promoção (FK para mrl_promocao).
+          - name: nroempresa
+            description: Código da loja (FK para max_empresa).
+          - name: nrosegmento
+            description: Número do segmento.
+          - name: precopromocional
+            description: Preço promocional do produto nesta promoção.
+          - name: status
+            description: "Status do item na promoção: A = ativo, I = inativo."
+          - name: dtainicioprom
+            description: Data de início da vigência do item (sobrescreve cabeçalho quando preenchida).
+          - name: dtafimprom
+            description: Data de fim da vigência do item (sobrescreve cabeçalho quando preenchida).
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
+      # Estoque por loja (mrl_produtoempresa — colunas depreciadas)
+      # -------------------------------------------------------------------------
+          - name: qtdpendpedcompra_depreciada
+            description: Quantidade pendente em pedidos de compra (coluna depreciada no Oracle — sufixo _depreciada adicionado pelo Consinco).
+          - name: qtdpendpedexped_depreciada
+            description: Quantidade pendente em pedidos de expedição (coluna depreciada no Oracle).
+          - name: qtdpedrectransito_depreciada
+            description: Quantidade em trânsito de recebimento (coluna depreciada no Oracle).
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
+      # Fornecedor
+      # -------------------------------------------------------------------------
+      - name: maf_fornecdivisao
+        description: >
+          Cadastro de fornecedores por divisão comercial. Contém prazos comerciais,
+          condições de pagamento e classificação ABC. Fonte única para dim_fornecedor.
+        columns:
+          - name: nrodivisao
+            description: Número da divisão comercial.
+          - name: seqfornecedor
+            description: Código sequencial do fornecedor (chave natural).
+          - name: pzomedvisitarep
+            description: Prazo médio de visita do representante (dias).
+          - name: pzomedentrega
+            description: Prazo médio de entrega (dias).
+          - name: pzomedatraso
+            description: Prazo médio de atraso na entrega (dias).
+          - name: pzopagamento
+            description: Prazo de pagamento (dias).
+          - name: nrocondpagdev
+            description: Código da condição de pagamento para devolução.
+          - name: nroformapagtodev
+            description: Código da forma de pagamento para devolução.
+          - name: statusgeral
+            description: Status geral do fornecedor.
+          - name: classifcomercabc
+            description: Classificação comercial ABC do fornecedor.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
+      # Pessoas, usuários e operadores
+      # -------------------------------------------------------------------------
+      - name: ge_pessoa
+        description: >
+          Cadastro geral de pessoas físicas e jurídicas do Consinco. Usado como
+          tabela-base para fornecedores, compradores e operadores via seqpessoa.
+        columns:
+          - name: seqpessoa
+            description: Código sequencial da pessoa (chave primária).
+          - name: nomerazao
+            description: Nome ou razão social.
+          - name: fantasia
+            description: Nome fantasia.
+          - name: status
+            description: Status da pessoa no cadastro.
+          - name: fisicajuridica
+            description: "Tipo: F = pessoa física, J = pessoa jurídica."
+          - name: nrocgccpf
+            description: CNPJ ou CPF (sem dígito verificador).
+          - name: digcgccpf
+            description: Dígito verificador do CNPJ/CPF.
+          - name: uf
+            description: UF do endereço.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: tb_usuario
+        description: >
+          Cadastro de usuários do sistema Consinco (schema CONSINCOMONITOR).
+          Vinculado a ge_pessoa via seqpessoa.
+        columns:
+          - name: sequsuario
+            description: Código sequencial do usuário (chave primária).
+          - name: nome
+            description: Nome completo do usuário.
+          - name: apelido
+            description: Apelido/login do usuário.
+          - name: nivel
+            description: Nível de acesso do usuário.
+          - name: ativo
+            description: "Indica se o usuário está ativo: S/N."
+          - name: seqpessoa
+            description: Código da pessoa vinculada (FK para ge_pessoa).
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: pdv_operador
+        description: >
+          Cadastro de operadores de PDV por loja. Vinculado a ge_pessoa via seqpessoa.
+        columns:
+          - name: nroempresa
+            description: Código da loja (FK para max_empresa).
+          - name: seqoperador
+            description: Código sequencial do operador na loja.
+          - name: codoperador
+            description: Código do operador (usado no PDV).
+          - name: funcaooperador
+            description: Função do operador (operador, supervisor, etc.).
+          - name: statusoperador
+            description: Status do operador.
+          - name: seqpessoa
+            description: Código da pessoa vinculada (FK para ge_pessoa).
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: max_comprador
+        description: >
+          Cadastro de compradores da rede. Vinculado a ge_pessoa via seqpessoa.
+        columns:
+          - name: seqcomprador
+            description: Código sequencial do comprador (chave primária).
+          - name: comprador
+            description: Nome do comprador.
+          - name: apelido
+            description: Apelido do comprador.
+          - name: status
+            description: Status do comprador.
+          - name: seqpessoa
+            description: Código da pessoa vinculada (FK para ge_pessoa).
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
+      # PDV / checkouts
+      # -------------------------------------------------------------------------
+      - name: vw_pdv
+        description: >
+          Checkouts ativos por loja e segmento (schema CONSINCOMONITOR).
+          Filtrado pelo segmento principal da loja via INNER JOIN com max_empresa,
+          evitando duplicação por segmento secundário.
+        columns:
+          - name: nroempresa
+            description: Código da loja (FK para max_empresa).
+          - name: nrocheckout
+            description: Número do checkout (caixa).
+          - name: nrosegmento
+            description: Número do segmento principal da loja.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
+      # Operações e formas de pagamento
+      # -------------------------------------------------------------------------
+      - name: max_codgeraloper
+        description: >
+          Cadastro de códigos gerais de operação (CGO) do Consinco. Define o tipo
+          e aplicação de cada operação (venda, devolução, transferência, etc.).
+          Vendas PDV válidas: 800, 810, 820, 828. Devolução: 202.
+        columns:
+          - name: codgeraloper
+            description: Código geral da operação (chave primária).
+          - name: descricao
+            description: Descrição da operação.
+          - name: aplicacao
+            description: Aplicação do CGO (PDV, estoque, fiscal, etc.).
+          - name: tipcgo
+            description: "Tipo: S = saída, E = entrada."
+          - name: tipuso
+            description: Tipo de uso do CGO.
+          - name: status
+            description: Status do CGO.
+          - name: codespeciefin
+            description: Código da espécie financeira vinculada.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: mrl_formapagto
+        description: Cadastro de formas de pagamento do Consinco.
+        columns:
+          - name: nroformapagto
+            description: Código da forma de pagamento (chave primária).
+          - name: formapagto
+            description: Descrição da forma de pagamento.
+          - name: especieformapagto
+            description: Espécie da forma de pagamento.
+          - name: statusformapagto
+            description: Status da forma de pagamento.
+          - name: nroformapagtoecf
+            description: Código ECF da forma de pagamento.
+          - name: codespecie
+            description: Código da espécie financeira.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
+      # Segmentação e locais de estoque
+      # -------------------------------------------------------------------------
+      - name: mad_segmento
+        description: >
+          Cadastro de segmentos comerciais por divisão. Cada loja possui um
+          segmento principal (nrosegmentoprinc em max_empresa).
+        columns:
+          - name: nrodivisao
+            description: Número da divisão comercial.
+          - name: nrosegmento
+            description: Número do segmento.
+          - name: descsegmento
+            description: Descrição do segmento.
+          - name: status
+            description: Status do segmento.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: mrl_local
+        description: Locais de armazenagem de estoque por loja (salão, depósito, câmara, etc.).
+        columns:
+          - name: nroempresa
+            description: Código da loja (FK para max_empresa).
+          - name: seqlocal
+            description: Código sequencial do local na loja.
+          - name: local
+            description: Descrição do local de armazenagem.
+          - name: tiplocal
+            description: Tipo do local (loja, depósito, etc.).
+          - name: status
+            description: Status do local.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
+      # Parâmetros do sistema
+      # -------------------------------------------------------------------------
+      - name: max_parametro
+        description: >
+          Parâmetros de configuração do sistema Consinco por loja e grupo.
+          Usado para leitura de configurações operacionais.
+        columns:
+          - name: nroempresa
+            description: Código da loja (FK para max_empresa).
+          - name: parametro
+            description: Identificador do parâmetro.
+          - name: grupo
+            description: Grupo ao qual o parâmetro pertence.
+          - name: valor
+            description: Valor configurado para o parâmetro.
+          - name: tipodado
+            description: Tipo de dado do valor (S = string, N = numérico, etc.).
+          - name: comentario
+            description: Descrição do parâmetro.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
+      # Domínios de pedido de compras
+      # -------------------------------------------------------------------------
+      - name: madv_situacaoped
+        description: >
+          Domínio de situações de pedido de compras. Extraído com SELECT * —
+          colunas documentadas ao construir o modelo staging.
+        columns:
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: madv_tippedido
+        description: >
+          Domínio de tipos de pedido de compras. Extraído com SELECT * —
+          colunas documentadas ao construir o modelo staging.
+        columns:
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: madv_origempedido
+        description: Domínio de origens de pedido de compras.
+        columns:
+          - name: origempedido
+            description: Código da origem do pedido (chave primária).
+          - name: descorigempedido
+            description: Descrição da origem do pedido.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
+      # Vendas PDV
+      # -------------------------------------------------------------------------
+      - name: maxv_abcdistribbase
+        description: >
+          Buffer rolling de vendas PDV extraído do Consinco via Hop.
+          Contém janela recente (hot = hoje, cold = D-5). Carga histórica realizada
+          pelo pipeline maxv_abcdistribbase_historico (mesma tabela, params DATA_INICIO/DATA_FIM).
+          Agregado por hora, documento, produto e operador. Métricas de custo e lucro
+          calculadas pelas funções Oracle FC5 no momento da extração.
+        columns:
+          - name: datahora
+            description: Timestamp truncado à hora da transação (TRUNC(DTAHORLANCTO, HH)).
+          - name: nroempresa
+            description: Código da loja.
+          - name: nrodocto
+            description: Número do documento (cupom fiscal).
+          - name: seriedocto
+            description: Série do documento.
+          - name: checkout
+            description: Número do checkout (caixa).
+          - name: seqproduto
+            description: Código sequencial do produto.
+          - name: codgeraloper
+            description: "Código da operação. Vendas válidas: 800, 810, 820, 828, 202."
+          - name: vlrlucro
+            description: Lucro calculado pela função Oracle FC5_AbcDistribLucratividade.
+          - name: ctobrutovda
+            description: Custo bruto calculado pela função Oracle FC5_AbcDistribCustoBruto.
+          - name: vlrctoliqvda
+            description: Custo líquido calculado pela função Oracle FC5_AbcDistribCustoLiquido.
+          - name: vlrvendapromoc
+            description: Venda promocional calculada pela função Oracle FC5_AbcDistribVendaPromoc.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.

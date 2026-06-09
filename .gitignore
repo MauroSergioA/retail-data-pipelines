@@ -6,6 +6,11 @@
 logs/
 *.log
 
+# dbt — artefatos gerados
+transform/target/
+transform/dbt_packages/
+transform/logs/
+
 # OS
 .DS_Store
 Thumbs.db
