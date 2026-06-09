@@ -8,7 +8,7 @@ ENV HOP_OPTIONS=-Xmx3g
 
 USER root
 
-RUN apt-get update && apt-get install -y --no-install-recommends python3 && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache python3
 
 RUN curl -fsSL \
     "https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/21.9.0.0/ojdbc8-21.9.0.0.jar" \
