@@ -39,6 +39,9 @@ services:
       - QUEUE_BULL_REDIS_PORT=6379
     volumes:
       - n8n_data:/home/node/.n8n
+    networks:
+      - n8n_internal
+      - dokploy-shared
     deploy:
       resources:
         limits:
@@ -53,6 +56,8 @@ services:
     image: n8nio/n8n:latest
     restart: always
     command: worker
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - NODE_ENV=production
       - EXECUTIONS_MODE=queue
@@ -68,6 +73,8 @@ services:
       - TZ=America/Sao_Paulo
       - QUEUE_BULL_REDIS_HOST=redis
       - QUEUE_BULL_REDIS_PORT=6379
+    networks:
+      - n8n_internal
     deploy:
       resources:
         limits:
@@ -87,6 +94,8 @@ services:
       - N8N_ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - GENERIC_TIMEZONE=America/Sao_Paulo
       - N8N_RUNNERS_MAX_CONCURRENCY=50
+    networks:
+      - n8n_internal
     deploy:
       resources:
         limits:
@@ -107,6 +116,8 @@ services:
       retries: 5
     volumes:
       - redis_storage:/data
+    networks:
+      - n8n_internal
     deploy:
       resources:
         limits:
@@ -117,3 +128,9 @@ services:
 volumes:
   n8n_data:
   redis_storage:
+
+networks:
+  n8n_internal:
+    driver: bridge
+  dokploy-shared:
+    external: true
