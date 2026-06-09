@@ -516,7 +516,7 @@
       <proxy_host/>
       <proxy_port/>
       <run_every_row>N</run_every_row>
-      <targetfilename/>
+      <targetfilename>/tmp/hop-response.txt</targetfilename>
       <targetfilename_extension/>
       <upload_fieldname/>
       <uploadfilename/>
