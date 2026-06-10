@@ -506,23 +506,14 @@
       <attributes/>
       <addfilenameresult>Y</addfilenameresult>
       <date_time_added>N</date_time_added>
-      <dest_fieldname/>
       <file_appended>N</file_appended>
       <headers>
 </headers>
       <ignore_ssl>N</ignore_ssl>
-      <non_proxy_hosts/>
       <password>Encrypted </password>
-      <proxy_host/>
-      <proxy_port/>
       <run_every_row>N</run_every_row>
       <targetfilename>/tmp/hop-response.txt</targetfilename>
-      <targetfilename_extension/>
-      <upload_fieldname/>
-      <uploadfilename/>
       <url>${HOP_WEBHOOK_FINISHED_URL}</url>
-      <url_fieldname/>
-      <username/>
       <parallel>N</parallel>
       <xloc>96</xloc>
       <yloc>240</yloc>
@@ -536,13 +527,6 @@
       <enabled>Y</enabled>
       <evaluation>Y</evaluation>
       <unconditional>Y</unconditional>
-    </hop>
-    <hop>
-      <from>max_empresa.hpl</from>
-      <to>vw_pdv.hpl</to>
-      <enabled>Y</enabled>
-      <evaluation>Y</evaluation>
-      <unconditional>N</unconditional>
     </hop>
     <hop>
       <from>vw_pdv.hpl</from>
@@ -652,6 +636,13 @@
     <hop>
       <from>mrl_promocao.hpl</from>
       <to>mrl_promocaoitem.hpl</to>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>max_empresa.hpl</from>
+      <to>vw_pdv.hpl</to>
       <enabled>Y</enabled>
       <evaluation>Y</evaluation>
       <unconditional>N</unconditional>
