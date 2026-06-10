@@ -8,7 +8,7 @@ ENV HOP_OPTIONS=-Xmx3g
 
 USER root
 
-RUN apk add --no-cache python3
+RUN apk add --no-cache python3 su-exec
 
 RUN curl -fsSL \
     "https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/21.9.0.0/ojdbc8-21.9.0.0.jar" \
@@ -18,9 +18,10 @@ RUN curl -fsSL \
     cp /opt/hop/lib/ojdbc8.jar /opt/hop/plugins/databases/oracle/lib/ojdbc8.jar
 
 COPY --chown=hop:hop scripts/init-hop-vars.sh   /home/hop/init-hop-vars.sh
-COPY --chown=root:root scripts/hop-entrypoint.sh /opt/hop/hop-entrypoint.sh
-COPY --chown=root:root scripts/hop-run-server.py /opt/hop/hop-run-server.py
-RUN chmod +x /home/hop/init-hop-vars.sh /opt/hop/hop-entrypoint.sh /opt/hop/hop-run-server.py
+COPY --chown=root:root scripts/hop-entrypoint.sh   /opt/hop/hop-entrypoint.sh
+COPY --chown=root:root scripts/hop-run-server.py   /opt/hop/hop-run-server.py
+COPY --chown=root:root scripts/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /home/hop/init-hop-vars.sh /opt/hop/hop-entrypoint.sh /opt/hop/hop-run-server.py /docker-entrypoint.sh
 
 USER hop
 
@@ -30,4 +31,5 @@ COPY --chown=hop:hop metadata/    /home/hop/project/metadata/
 
 EXPOSE 8080
 
-ENTRYPOINT ["/opt/hop/hop-entrypoint.sh"]
+USER root
+ENTRYPOINT ["/docker-entrypoint.sh"]
