@@ -520,7 +520,7 @@
       <targetfilename_extension/>
       <upload_fieldname/>
       <uploadfilename/>
-      <url>https://n8n-webhook.modernizaai.com/webhook/hop-finished</url>
+      <url>${HOP_WEBHOOK_FINISHED_URL}</url>
       <url_fieldname/>
       <username/>
       <parallel>N</parallel>

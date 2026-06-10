@@ -1,8 +1,8 @@
-name: superque
+name: retail
 version: '1.0.0'
 config-version: 2
 
-profile: superque
+profile: retail
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -16,7 +16,7 @@ clean-targets:
   - dbt_packages
 
 models:
-  superque:
+  retail:
     staging:
       +materialized: view
       +schema: silver

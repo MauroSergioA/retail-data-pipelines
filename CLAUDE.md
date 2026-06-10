@@ -1,6 +1,6 @@
 # retail-data-pipelines — Contexto do Projeto
 
-Plataforma de dados para rede de supermercados (~12 lojas). Extrai do ERP Oracle (Consinco),
+Plataforma de dados para rede de varejo (~12 lojas). Extrai do ERP Oracle (Consinco),
 transforma com dbt e entrega via Metabase. Toda a infraestrutura roda em Docker no servidor
 Linux (Dokploy). Repo público — credenciais e IPs internos NUNCA no código.
 
@@ -39,11 +39,11 @@ n8n Agendamento (01:00)
   → POST http://host.docker.internal:8080/run        ← hop-run-server.py
     → hop-run.sh executa workflow_diario.hwf
       → extrai todas as tabelas Oracle → bronze
-      → ao final: POST https://n8n-webhook.modernizaai.com/webhook/hop-finished
+      → ao final: POST ${HOP_WEBHOOK_FINISHED_URL}
         → n8n Pipeline Diário
           → POST http://host.docker.internal:8000/run  ← dbt-server.py
             → dbt run (bronze → silver → gold)
-              → Telegram @SuperqueOps_bot
+              → Telegram (bot configurado via env var)
 ```
 
 ---
@@ -136,6 +136,7 @@ Grupos principais:
 - `PG_*` — PostgreSQL (host, porta, database, usuário, senha, URL JDBC)
 - `CONSINCO_*` — Oracle ERP (host, porta, service name, usuário, senha, URL JDBC)
 - `HOP_OPTIONS` — JVM memory para Hop (`-Xmx3g`)
+- `HOP_WEBHOOK_FINISHED_URL` — URL do webhook n8n chamado ao fim da extração
 - `DBT_*` — usuário/senha dbt no PostgreSQL
 - `N8N_*` — configuração n8n (host, DB, encryption key, JWT secret, runners secret)
 - `MB_*` — configuração Metabase (DB name, usuário, senha)

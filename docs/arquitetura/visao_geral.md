@@ -2,12 +2,12 @@
 
 ## O que é este projeto
 
-Superque Analytics é o data warehouse operacional da rede Superque. O objetivo é centralizar
+Retail Analytics é o data warehouse operacional da rede de varejo. O objetivo é centralizar
 dados de todas as fontes (ERP, RH, frota, metas manuais) em um único lugar confiável,
 com transformações documentadas e auditáveis, alimentando relatórios no Power BI.
 
-O projeto foi construído do zero em 2026 para substituir um projeto anterior (`bi-projects-superque`)
-que havia se tornado híbrido e difícil de manter.
+O projeto foi construído do zero em 2026 para substituir um projeto anterior que havia
+se tornado híbrido e difícil de manter.
 
 ---
 
@@ -109,7 +109,7 @@ Credenciais em `~/.dbt/profiles.yml` (gitignored).
 | PostgreSQL | 18 | Porta 5432 |
 | dbt-postgres | 1.10.0 | venv em `C:\venv\dbt` |
 | dbt-core | 1.12.0b1 | Incluído no venv |
-| Apache Hop | — | Projeto `superque-analytics`, environment `prd` |
+| Apache Hop | — | Projeto `retail`, environment `prod` |
 | Python | 3.13 | Microsoft Store |
 
 Para ativar o dbt no terminal:

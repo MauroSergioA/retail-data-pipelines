@@ -15,13 +15,13 @@ O `dbt_project.yml` está em `transform\`, não na raiz do repositório.
 Sempre entre na subpasta antes de rodar:
 
 ```powershell
-cd C:\Projetos\superque-analytics\transform
+cd C:\Projetos\retail-data-pipelines\transform
 ```
 
 Ou, de qualquer lugar:
 
 ```powershell
-cd C:\Projetos\superque-analytics\transform; dbt run
+cd C:\Projetos\retail-data-pipelines\transform; dbt run
 ```
 
 ## Comandos do dia a dia

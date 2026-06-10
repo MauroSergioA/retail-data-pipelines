@@ -6,7 +6,7 @@ models:
   # ---------------------------------------------------------------------------
   - name: fato_venda
     description: >
-      Fato de vendas PDV da rede Superque. Histórico acumulado com carregamento
+      Fato de vendas PDV da rede de varejo. Histórico acumulado com carregamento
       incremental (delete+insert). Hot: atualiza hoje 4x/dia. Cold: atualiza D-5
       na madrugada para capturar correções retroativas.
       Métricas de custo e lucro calculadas pelas funções Oracle FC5 no momento
@@ -154,7 +154,7 @@ models:
   # ---------------------------------------------------------------------------
   - name: dim_empresa_info
     description: >
-      Dimensão de lojas e empresas da rede Superque.
+      Dimensão de lojas e empresas da rede de varejo.
       Inclui todas as unidades, ativas e inativas — filtrar por status_empresa = 'A'
       para obter apenas lojas ativas. Nunca filtrar por NOT IN (3, 4).
       Agrega total_pdv_ativo por loja a partir de stg_vw_pdv.

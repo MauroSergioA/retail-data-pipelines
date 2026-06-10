@@ -13,7 +13,7 @@
 
 ## O que extrai
 
-Cadastro completo de empresas e lojas da rede Superque. Inclui dados cadastrais,
+Cadastro completo de empresas e lojas da rede de varejo. Inclui dados cadastrais,
 endereço, metas operacionais e os CGOs (Códigos Gerais de Operação) de cada loja —
 necessários para filtrar movimentações de estoque no futuro.
 

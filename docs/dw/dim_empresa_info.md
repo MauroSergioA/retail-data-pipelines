@@ -2,7 +2,7 @@
 
 ## Descrição
 
-Dimensão de lojas e empresas da rede Superque. Inclui todas as unidades —
+Dimensão de lojas e empresas da rede de varejo. Inclui todas as unidades —
 ativas e inativas. Nunca filtrar por `NOT IN (3, 4)`.
 
 Para obter apenas lojas ativas: `WHERE status = 'ATIVO'`.

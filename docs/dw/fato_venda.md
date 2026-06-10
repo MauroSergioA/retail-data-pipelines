@@ -2,7 +2,7 @@
 
 ## Descrição
 
-Fato de vendas PDV da rede Superque. Histórico acumulado desde 01/08/2022.
+Fato de vendas PDV da rede de varejo. Histórico acumulado desde 01/08/2022.
 Inclui vendas (`codgeraloper` 800, 810, 820, 828) e devoluções (202).
 
 Métricas de custo e lucro calculadas pelas funções Oracle `FC5_AbcDistribLucratividade` e

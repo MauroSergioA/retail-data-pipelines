@@ -7,7 +7,7 @@ source /home/hop/init-hop-vars.sh
 # Register project in Hop config (idempotent)
 echo "Registering Hop project..."
 /opt/hop/hop-conf.sh \
-  --project=superque \
+  --project=retail \
   --project-create \
   --project-home='/home/hop/project' \
   --project-config-file='project-config.json' 2>&1 || true
@@ -17,7 +17,7 @@ echo "Registering Hop environment..."
 /opt/hop/hop-conf.sh \
   --environment-create \
   --environment=prod \
-  --environment-project=superque \
+  --environment-project=retail \
   --environment-config-files='/tmp/hop-env.json' 2>&1 || true
 
 echo "Starting Hop trigger server..."

@@ -1,6 +1,6 @@
 FROM apache/hop:2.10.0
 
-ENV HOP_PROJECT_NAME=superque
+ENV HOP_PROJECT_NAME=retail
 ENV HOP_PROJECT_FOLDER=/home/hop/project
 ENV HOP_ENVIRONMENT_NAME=prod
 ENV TZ=America/Sao_Paulo

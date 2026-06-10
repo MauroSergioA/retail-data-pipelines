@@ -2,7 +2,7 @@
 
 ## Visão geral
 
-Consinco é o ERP principal da rede Superque. É a fonte mais crítica do projeto —
+Consinco é o ERP principal da rede de varejo. É a fonte mais crítica do projeto —
 contém vendas, estoque, produtos, fornecedores e cadastros operacionais.
 
 | Atributo | Valor |

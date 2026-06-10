@@ -63,7 +63,7 @@ Verificar no log:
 
 ```powershell
 $env:PATH = "C:\venv\dbt\Scripts;$env:PATH"
-cd C:\Projetos\superque-analytics\transform
+cd C:\Projetos\retail-data-pipelines\transform
 dbt run --select fato_venda
 ```
 

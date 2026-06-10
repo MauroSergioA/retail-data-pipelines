@@ -4,7 +4,7 @@ sources:
   - name: consinco
     description: >
       Tabelas extraídas do ERP Consinco (Oracle JDBC) via Apache Hop e carregadas
-      no schema bronze do PostgreSQL (database superque). Hop é responsável pela
+      no schema bronze do PostgreSQL. Hop é responsável pela
       extração e carga (E+L); dbt consome essas tabelas como fontes e aplica toda
       a transformação.
     schema: bronze
@@ -15,7 +15,7 @@ sources:
       # -------------------------------------------------------------------------
       - name: max_empresa
         description: >
-          Cadastro de empresas e lojas da rede Superque. Contém dados cadastrais,
+          Cadastro de empresas e lojas da rede de varejo. Contém dados cadastrais,
           metas operacionais e códigos de operação (CGO) por loja.
         columns:
           - name: nroempresa

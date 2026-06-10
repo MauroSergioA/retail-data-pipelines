@@ -16,7 +16,7 @@ def _run():
         subprocess.run(
             [
                 "/opt/hop/hop-run.sh",
-                "--project=superque",
+                "--project=retail",
                 "--environment=prod",
                 "--file=workflows/workflow_diario.hwf",
                 "--runconfig=local",

@@ -4,7 +4,7 @@
 mkdir -p /home/dbt_user/.dbt
 
 cat > /home/dbt_user/.dbt/profiles.yml <<EOF
-superque:
+retail:
   target: prod
   outputs:
     prod:
