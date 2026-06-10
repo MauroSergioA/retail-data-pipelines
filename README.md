@@ -1,5 +1,13 @@
 # retail-data-pipelines
 
+![Apache Hop](https://img.shields.io/badge/Apache%20Hop-blue?logo=apache)
+![dbt](https://img.shields.io/badge/dbt-orange?logo=dbt)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white)
+![n8n](https://img.shields.io/badge/n8n-EA4B71?logo=n8n&logoColor=white)
+![Metabase](https://img.shields.io/badge/Metabase-509EE3?logo=metabase&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
+
 Pipeline de dados moderno para rede de varejo — extração do ERP Oracle, transformação
 com dbt e entrega via Metabase. Infraestrutura 100% open source, containerizada e
 auto-hospedada.
@@ -26,12 +34,12 @@ plataforma — mantendo (ou melhorando) a qualidade das entregas.
 
 ## Arquitetura
 
-```
+```text
 n8n (01:00)
   → POST :8080/run              ← hop-run-server.py
     → hop-run.sh executa workflow_diario.hwf
       → extrai tabelas Oracle → bronze (PostgreSQL)
-      → POST ${HOP_WEBHOOK_FINISHED_URL}
+      → notifica webhook n8n
         → n8n Pipeline Diário
           → POST :8000/run      ← dbt-server.py
             → dbt run (bronze → silver → gold)
@@ -41,7 +49,7 @@ n8n (01:00)
 ### Camadas de dados
 
 | Schema | Responsável | Conteúdo |
-|---|---|---|
+| --- | --- | --- |
 | `bronze` | Apache Hop | Dados brutos do Oracle, sem transformação |
 | `silver` | dbt (views) | Limpeza, tipagem e renomeação de colunas |
 | `gold` | dbt (tables) | Dimensões, fatos e marts prontos para consumo |
@@ -96,11 +104,11 @@ automaticamente via GitHub webhook.
 ### Em produção
 
 | Fonte | Tabelas carregadas | Camada |
-|---|---|---|
+| --- | --- | --- |
 | Consinco (Oracle ERP) | 20 tabelas | bronze → silver |
 
 | Modelo | Tipo | Status |
-|---|---|---|
+| --- | --- | --- |
 | `dim_empresa_info` | Dimensão | ✅ produção |
 | `dim_fornecedor_info` | Dimensão | ✅ produção |
 | `dim_produto_info` | Dimensão | ✅ produção |
@@ -111,7 +119,7 @@ automaticamente via GitHub webhook.
 ### Roadmap
 
 | Fonte | Dados | Status |
-|---|---|---|
+| --- | --- | --- |
 | Asseponto (SQL Server) | Ponto eletrônico, RH | 🔜 planejado |
 | Cobli (API REST) | Rastreamento de frota | 🔜 planejado |
 | Google Sheets | Metas comerciais | 🔜 planejado |
@@ -130,7 +138,7 @@ A documentação dos modelos dbt — descrições de colunas, testes, linhagem e
 ## Stack
 
 | Camada | Ferramenta | Versão |
-|---|---|---|
+| --- | --- | --- |
 | Extração | Apache Hop | 2.10.0 |
 | Transformação | dbt Core | 1.12.0-b1 |
 | Armazenamento | PostgreSQL | 18 |
@@ -143,7 +151,7 @@ A documentação dos modelos dbt — descrições de colunas, testes, linhagem e
 
 ## Estrutura do repositório
 
-```
+```text
 retail-data-pipelines/
 ├── Dockerfile              # Hop trigger server (Alpine + Python3 + ojdbc8)
 ├── Dockerfile.dbt          # dbt runner (Python 3.12-slim)
@@ -179,7 +187,7 @@ retail-data-pipelines/
 Copie `.env.example` e configure as variáveis no Dokploy para cada serviço.
 
 | Grupo | Descrição | Serviço |
-|---|---|---|
+| --- | --- | --- |
 | `PG_*` | PostgreSQL — host, porta, database, usuário, senha, JDBC URL | hop-server, dbt-runner |
 | `CONSINCO_*` | Oracle ERP — host, porta, service name, usuário, senha, JDBC URL | hop-server |
 | `HOP_OPTIONS` | JVM memory (ex: `-Xmx3g`) | hop-server |
@@ -195,14 +203,14 @@ Copie `.env.example` e configure as variáveis no Dokploy para cada serviço.
 ### hop-run-server.py — porta 8080
 
 | Endpoint | Método | Descrição |
-|---|---|---|
+| --- | --- | --- |
 | `/run` | POST | Inicia `workflow_diario.hwf` em background. Retorna `{"status":"started"}` imediatamente. Retorna 409 se já estiver rodando. |
 | `/health` | GET | `{"status":"idle"}` ou `{"status":"running"}` |
 
 ### dbt-server.py — porta 8000
 
 | Endpoint | Método | Descrição |
-|---|---|---|
+| --- | --- | --- |
 | `/run` | POST | Executa `dbt run --target prod`. Retorna JSON com `returncode`, `stdout`, `stderr`. |
 | `/run?select=model` | POST | Executa modelo específico. |
 | `/health` | GET | `{"status":"ok"}` |
