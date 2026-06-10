@@ -144,8 +144,8 @@ A documentação dos modelos dbt — descrições de colunas, testes, linhagem e
 | Armazenamento | PostgreSQL | 18 |
 | BI | Metabase | 0.50.8 |
 | Orquestração | n8n | 2.25.6 |
-| Deploy | Dokploy | — |
-| Tunnel | Cloudflare Tunnel | — |
+| Deploy | Dokploy | 0.29.7 |
+| Tunnel | Cloudflare Tunnel (cloudflared) | — |
 
 ---
 
@@ -153,7 +153,7 @@ A documentação dos modelos dbt — descrições de colunas, testes, linhagem e
 
 ```text
 retail-data-pipelines/
-├── Dockerfile              # Hop trigger server (Alpine + Python3 + ojdbc8)
+├── Dockerfile              # Hop trigger server (Alpine + Python3 + su-exec + ojdbc8)
 ├── Dockerfile.dbt          # dbt runner (Python 3.12-slim)
 ├── .env.example            # Variáveis necessárias (sem valores reais)
 ├── consinco/               # Pipelines Hop (.hpl) — uma por tabela Oracle
@@ -168,6 +168,7 @@ retail-data-pipelines/
 │       ├── staging/consinco/   # stg_* — silver layer
 │       └── dw/                 # dim_*, fato_*, mart_* — gold layer
 ├── scripts/
+│   ├── docker-entrypoint.sh    # Wrapper root: injeta host.docker.internal, exec como hop
 │   ├── hop-entrypoint.sh       # Registra projeto/env no Hop + inicia trigger server
 │   ├── hop-run-server.py       # HTTP server :8080 → executa hop-run.sh
 │   ├── init-hop-vars.sh        # Gera /tmp/hop-env.json com env vars do Docker
@@ -177,7 +178,8 @@ retail-data-pipelines/
 │       └── 01_pg_dbt_user.sql  # Criação de usuários PostgreSQL
 └── compose/
     ├── n8n.yml                 # n8n queue mode (main + worker + runner + Redis)
-    └── metabase.yml            # Metabase com backend PostgreSQL
+    ├── metabase.yml            # Metabase com backend PostgreSQL
+    └── cloudflared.yml         # Cloudflare Tunnel (network_mode: host)
 ```
 
 ---
