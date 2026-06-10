@@ -17,21 +17,23 @@ printf '{
     { "name" : "CONSINCO_DATABASE",   "value" : "%s", "description" : "" },
     { "name" : "CONSINCO_USERNAME",   "value" : "%s", "description" : "" },
     { "name" : "CONSINCO_PASSWORD",   "value" : "%s", "description" : "" },
-    { "name" : "CONSINCO_URL",        "value" : "%s", "description" : "" }
+    { "name" : "CONSINCO_URL",             "value" : "%s", "description" : "" },
+    { "name" : "HOP_WEBHOOK_FINISHED_URL", "value" : "%s", "description" : "" }
   ]
 }' \
-  "${PG_HOSTNAME:-}"       \
-  "${PG_PORT:-}"           \
-  "${PG_DATABASE:-}"       \
-  "${PG_USERNAME:-}"       \
-  "${PG_PASSWORD:-}"       \
-  "${PG_URL:-}"            \
-  "${CONSINCO_HOSTNAME:-}" \
-  "${CONSINCO_PORT:-}"     \
-  "${CONSINCO_DATABASE:-}" \
-  "${CONSINCO_USERNAME:-}" \
-  "${CONSINCO_PASSWORD:-}" \
-  "${CONSINCO_URL:-}"      \
+  "${PG_HOSTNAME:-}"                 \
+  "${PG_PORT:-}"                     \
+  "${PG_DATABASE:-}"                 \
+  "${PG_USERNAME:-}"                 \
+  "${PG_PASSWORD:-}"                 \
+  "${PG_URL:-}"                      \
+  "${CONSINCO_HOSTNAME:-}"           \
+  "${CONSINCO_PORT:-}"               \
+  "${CONSINCO_DATABASE:-}"           \
+  "${CONSINCO_USERNAME:-}"           \
+  "${CONSINCO_PASSWORD:-}"           \
+  "${CONSINCO_URL:-}"                \
+  "${HOP_WEBHOOK_FINISHED_URL:-}"    \
   > "$ENVFILE"
 
 export HOP_ENVIRONMENT_CONFIG_FILE_NAME_PATHS="$ENVFILE"
