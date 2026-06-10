@@ -18,6 +18,5 @@ Thumbs.db
 # Claude Code
 .claude/
 
-# Documentação interna da empresa
-docs/negocio/
-docs/operacao/
+# Documentação interna (só README.md é público)
+docs/
