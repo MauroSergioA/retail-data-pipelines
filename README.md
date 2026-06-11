@@ -6,7 +6,7 @@
 ![n8n](https://img.shields.io/badge/n8n-EA4B71?logo=n8n&logoColor=white)
 ![Metabase](https://img.shields.io/badge/Metabase-509EE3?logo=metabase&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
-![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
+![Status](https://img.shields.io/badge/status-em%20produção-green)
 
 Pipeline de dados moderno para rede de varejo — extração do ERP Oracle, transformação
 com dbt e entrega via Metabase. Infraestrutura 100% open source, containerizada e
@@ -34,16 +34,48 @@ plataforma — mantendo (ou melhorando) a qualidade das entregas.
 
 ## Arquitetura
 
-```text
-n8n (01:00)
-  → POST :8080/run              ← hop-run-server.py
-    → hop-run.sh executa workflow_diario.hwf
-      → extrai tabelas Oracle → bronze (PostgreSQL)
-      → notifica webhook n8n
-        → n8n Pipeline Diário
-          → POST :8000/run      ← dbt-server.py
-            → dbt run (bronze → silver → gold)
-              → notificação Telegram
+```mermaid
+graph TB
+    subgraph Fontes["Fontes Externas"]
+        Oracle[(Oracle ERP\nConsinco)]
+        SQLS[(SQL Server\nAsseponto)]:::planned
+        API[APIs REST\nCobli]:::planned
+        GS[Google Sheets\nMetas]:::planned
+    end
+
+    subgraph Orquestração["Orquestração — n8n 2.25.6"]
+        n8n[Agendamento 01:00\nwebhook + Telegram]
+    end
+
+    subgraph Extração["Extração — Apache Hop 2.10.0"]
+        Hop[workflow_diario.hwf\n18 pipelines JDBC]
+    end
+
+    subgraph Armazenamento["PostgreSQL 18"]
+        bronze[(bronze\ndados brutos)]
+        silver[(silver\nviews limpas)]
+        gold[(gold\nfatos · dimensões · marts)]
+    end
+
+    subgraph Transformação["Transformação — dbt 1.12.0-b1"]
+        dbt[25 modelos\nstaging + dw]
+    end
+
+    subgraph Consumo["Consumo"]
+        MB[Metabase 0.50.8\ndashboards operacionais]
+    end
+
+    Oracle -->|JDBC| Hop
+    n8n -->|POST /run| Hop
+    Hop -->|carga raw| bronze
+    Hop -->|webhook| n8n
+    n8n -->|POST /run| dbt
+    bronze --> dbt
+    dbt -->|views| silver
+    dbt -->|tables| gold
+    gold -->|somente leitura| MB
+
+    classDef planned stroke-dasharray: 5 5, opacity: 0.5
 ```
 
 ### Camadas de dados
@@ -195,12 +227,15 @@ Copie `.env.example` e configure as variáveis no Dokploy para cada serviço.
 | `HOP_OPTIONS` | JVM memory (ex: `-Xmx3g`) | hop-server |
 | `HOP_WEBHOOK_FINISHED_URL` | URL do webhook n8n acionado ao fim da extração | hop-server |
 | `DBT_*` | Usuário e senha dbt no PostgreSQL | dbt-runner |
+| `TRIGGER_API_KEY` | Chave de autenticação dos servidores Hop e dbt (header `X-Api-Key`) | hop-server, dbt-runner |
 | `N8N_*` | Host, DB, encryption key, JWT secret, runners secret | n8n |
 | `MB_*` | Database, usuário e senha do Metabase | metabase |
 
 ---
 
 ## APIs dos trigger servers
+
+Chamadas `POST /run` requerem o header `X-Api-Key: <TRIGGER_API_KEY>`. O endpoint `/health` é público.
 
 ### hop-run-server.py — porta 8080
 

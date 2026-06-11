@@ -8,6 +8,7 @@ import os
 
 _lock = threading.Lock()
 _running = False
+_API_KEY = os.environ.get("TRIGGER_API_KEY", "")
 
 
 def _run():
@@ -36,8 +37,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
         else:
             self._respond(404, {"error": "not found"})
 
+    def _check_auth(self):
+        if not _API_KEY or self.headers.get("X-Api-Key") != _API_KEY:
+            self._respond(401, {"error": "unauthorized"})
+            return False
+        return True
+
     def do_POST(self):
         global _running
+        if not self._check_auth():
+            return
         if self.path == "/run":
             with _lock:
                 if _running:

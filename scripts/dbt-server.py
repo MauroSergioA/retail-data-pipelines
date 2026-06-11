@@ -7,6 +7,7 @@ import os
 
 DBT_PROJECT_DIR = "/dbt"
 DBT_PROFILES_DIR = "/home/dbt_user/.dbt"
+_API_KEY = os.environ.get("TRIGGER_API_KEY", "")
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
@@ -16,7 +17,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
         else:
             self._respond(404, {"error": "not found"})
 
+    def _check_auth(self):
+        if not _API_KEY or self.headers.get("X-Api-Key") != _API_KEY:
+            self._respond(401, {"error": "unauthorized"})
+            return False
+        return True
+
     def do_POST(self):
+        if not self._check_auth():
+            return
         if self.path.startswith("/run"):
             select = None
             if "?" in self.path:
