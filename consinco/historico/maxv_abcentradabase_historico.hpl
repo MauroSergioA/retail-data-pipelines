@@ -10,14 +10,14 @@
     <pipeline_status>0</pipeline_status>
     <parameters>
       <parameter>
-        <name>DATA_INICIO</name>
-        <default_value>2024-01-01</default_value>
-        <description>Data de início do lote (YYYY-MM-DD, inclusive)</description>
-      </parameter>
-      <parameter>
         <name>DATA_FIM</name>
         <default_value>2024-03-31</default_value>
         <description>Data de fim do lote (YYYY-MM-DD, inclusive)</description>
+      </parameter>
+      <parameter>
+        <name>DATA_INICIO</name>
+        <default_value>2024-01-01</default_value>
+        <description>Data de início do lote (YYYY-MM-DD, inclusive)</description>
       </parameter>
     </parameters>
     <capture_transform_performance>N</capture_transform_performance>
@@ -61,11 +61,14 @@
     <only_when_have_rows>N</only_when_have_rows>
     <partitioning_daily>N</partitioning_daily>
     <partitioning_enabled>N</partitioning_enabled>
+    <partitioning_field/>
     <partitioning_monthly>Y</partitioning_monthly>
+    <return_field/>
     <return_keys>N</return_keys>
     <schema>bronze</schema>
     <specify_fields>N</specify_fields>
     <table>maxv_abcentradabase</table>
+    <tablename_field/>
     <tablename_in_field>N</tablename_in_field>
     <tablename_in_table>Y</tablename_in_table>
     <truncate>Y</truncate>
@@ -234,7 +237,7 @@ GROUP BY
     <variables_active>Y</variables_active>
     <attributes/>
     <GUI>
-      <xloc>176</xloc>
+      <xloc>128</xloc>
       <yloc>96</yloc>
     </GUI>
   </transform>
