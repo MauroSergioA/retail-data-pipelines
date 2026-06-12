@@ -46,8 +46,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 cmd += ["--exclude", "tag:monthly"]
 
             result = subprocess.run(cmd, capture_output=True, text=True)
-            status = 200 if result.returncode == 0 else 500
-            self._respond(status, {
+            self._respond(200, {
                 "returncode": result.returncode,
                 "stdout": result.stdout[-4000:],
                 "stderr": result.stderr[-2000:],
