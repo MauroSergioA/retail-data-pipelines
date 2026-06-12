@@ -500,6 +500,39 @@
       <attributes_hac/>
     </action>
     <action>
+      <name>maxv_abcentradabase.hpl</name>
+      <description/>
+      <type>PIPELINE</type>
+      <attributes/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <clear_files>N</clear_files>
+      <clear_rows>N</clear_rows>
+      <create_parent_folder>N</create_parent_folder>
+      <exec_per_row>N</exec_per_row>
+      <filename>${PROJECT_HOME}/consinco/maxv_abcentradabase.hpl</filename>
+      <logext/>
+      <logfile/>
+      <loglevel>Basic</loglevel>
+      <parameters>
+        <parameter>
+          <name>WINDOW_DAYS</name>
+          <stream_name/>
+          <value>5</value>
+        </parameter>
+        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>
+      <params_from_previous>N</params_from_previous>
+      <run_configuration>local</run_configuration>
+      <set_append_logfile>N</set_append_logfile>
+      <set_logfile>N</set_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <parallel>N</parallel>
+      <xloc>240</xloc>
+      <yloc>384</yloc>
+      <attributes_hac/>
+    </action>
+    <action>
       <name>Notificar n8n</name>
       <description/>
       <type>HTTP</type>
@@ -689,6 +722,13 @@
     </hop>
     <hop>
       <from>maxv_abcdistribbase.hpl</from>
+      <to>maxv_abcentradabase.hpl</to>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>maxv_abcentradabase.hpl</from>
       <to>Notificar n8n</to>
       <enabled>Y</enabled>
       <evaluation>Y</evaluation>

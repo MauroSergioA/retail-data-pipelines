@@ -564,6 +564,57 @@ sources:
             description: Timestamp da carga via Hop.
 
       # -------------------------------------------------------------------------
+      # Entradas de notas fiscais (compras)
+      # -------------------------------------------------------------------------
+      - name: maxv_abcentradabase
+        description: >
+          Buffer rolling de entradas de notas fiscais extraído do Consinco via Hop.
+          Contém janela recente (cold = D-5). Métricas de custo calculadas pelas funções
+          Oracle FC5_DIVIDE e FPADRAOEMBVENDA2 no momento da extração.
+          Grain: empresa × data_entrada × data_emissao × produto × documento × operação × operador × embalagem.
+        columns:
+          - name: nroempresa
+            description: Código da loja.
+          - name: dtaentrada
+            description: Data de entrada da nota fiscal (recebimento físico).
+          - name: dtaemissao
+            description: Data de emissão da nota fiscal pelo fornecedor.
+          - name: seqproduto
+            description: Código sequencial do produto.
+          - name: nrodocto
+            description: Número do documento (NF).
+          - name: seqfornecedor
+            description: Código sequencial do fornecedor (SEQPESSOA na fonte Oracle).
+          - name: nrodocumento
+            description: Chave composta do documento — nroempresa || nrodocto || seqfornecedor.
+          - name: codgeraloper
+            description: Código da operação. Compras diretas típicas 1 e 11. Sem filtro na extração — filtrar no dbt.
+          - name: operador
+            description: Código do operador responsável pelo lançamento.
+          - name: qtdembalagem
+            description: Quantidade da embalagem padrão (via FPADRAOEMBVENDA2).
+          - name: quantidade
+            description: Quantidade líquida do item (QTDITEM - DQTDITEM).
+          - name: vlrentrada
+            description: Valor de entrada bruto.
+          - name: vlrcustobruto
+            description: Custo bruto de entrada.
+          - name: vlrcustoliquido
+            description: Custo líquido fiscal de entrada (deduz ICMS, PIS, COFINS).
+          - name: vlrproduto
+            description: Valor do produto (sem impostos).
+          - name: vlrtotalnf
+            description: Valor total da nota fiscal.
+          - name: vlrdescontos
+            description: Total de descontos aplicados na nota.
+          - name: custofiscaltotalentrada
+            description: Custo fiscal total de entrada (MRL_PRODUTOEMPRESA × quantidade).
+          - name: prazomediopag
+            description: Prazo médio de pagamento ponderado pelo valor da NF.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
       # Vendas PDV
       # -------------------------------------------------------------------------
       - name: maxv_abcdistribbase

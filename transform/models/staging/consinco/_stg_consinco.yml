@@ -2,6 +2,74 @@ version: 2
 
 models:
   # ---------------------------------------------------------------------------
+  # Entradas de notas fiscais (compras)
+  # ---------------------------------------------------------------------------
+  - name: stg_maxv_abcentradabase
+    description: >
+      Staging de entradas de NF. Cast e renomeação das colunas de raw.maxv_abcentradabase.
+      Calcula dias_leadtime = dta_entrada - dta_emissao. Sem filtro de codgeraloper —
+      o filtro é aplicado no fato_entrada e no mart_leadtime_fornecedor.
+    columns:
+      - name: empresa_id
+        description: Código da loja.
+        data_tests:
+          - not_null
+      - name: dta_entrada
+        description: Data de entrada da NF (recebimento físico).
+        data_tests:
+          - not_null
+      - name: dta_emissao
+        description: Data de emissão da NF pelo fornecedor.
+        data_tests:
+          - not_null
+      - name: dias_leadtime
+        description: Leadtime em dias corridos — dta_entrada - dta_emissao.
+      - name: produto_id
+        description: Código sequencial do produto.
+        data_tests:
+          - not_null
+      - name: nro_docto
+        description: Número do documento (NF).
+      - name: fornecedor_id
+        description: Código sequencial do fornecedor (SEQPESSOA na fonte Oracle).
+        data_tests:
+          - not_null
+      - name: nro_documento
+        description: Chave composta do documento — nroempresa || nrodocto || seqfornecedor.
+        data_tests:
+          - not_null
+      - name: cod_geral_oper
+        description: Código da operação. Sem filtro — todos os CGOs são mantidos.
+        data_tests:
+          - not_null
+      - name: operador_id
+        description: Código do operador responsável pelo lançamento.
+      - name: qtd_embalagem
+        description: Quantidade da embalagem padrão (via FPADRAOEMBVENDA2).
+      - name: quantidade
+        description: Quantidade líquida do item.
+      - name: vlr_entrada
+        description: Valor de entrada.
+      - name: vlr_custo_bruto
+        description: Custo bruto de entrada.
+      - name: vlr_custo_liquido
+        description: Custo líquido fiscal de entrada.
+      - name: vlr_produto
+        description: Valor do produto.
+      - name: vlr_total_nf
+        description: Valor total da nota fiscal.
+      - name: vlr_descontos
+        description: Total de descontos.
+      - name: vlr_custo_fiscal_total
+        description: Custo fiscal total de entrada.
+      - name: prazo_medio_pagamento
+        description: Prazo médio de pagamento ponderado pelo valor da NF.
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  # ---------------------------------------------------------------------------
   # Vendas PDV
   # ---------------------------------------------------------------------------
   - name: stg_maxv_abcdistribbase

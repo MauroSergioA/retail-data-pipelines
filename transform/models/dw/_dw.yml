@@ -4,6 +4,74 @@ models:
   # ---------------------------------------------------------------------------
   # Fatos
   # ---------------------------------------------------------------------------
+  - name: fato_entrada
+    description: >
+      Fato de entradas de notas fiscais (compras). Histórico acumulado com carregamento
+      incremental (delete+insert por dta_entrada). Cold: atualiza D-5 na madrugada.
+      Métricas de custo calculadas pelas funções Oracle FC5_DIVIDE e FPADRAOEMBVENDA2
+      no momento da extração pelo Hop. Sem filtro de cod_geral_oper — todos os CGOs
+      são mantidos para permitir análises distintas (compras, devoluções, transferências).
+      Para análise de leadtime de fornecedor, filtrar cod_geral_oper IN (1, 11).
+    columns:
+      - name: empresa_id
+        description: Código da loja.
+        data_tests:
+          - not_null
+      - name: dta_entrada
+        description: Data de entrada da NF.
+        data_tests:
+          - not_null
+      - name: dta_emissao
+        description: Data de emissão da NF pelo fornecedor.
+        data_tests:
+          - not_null
+      - name: dias_leadtime
+        description: Leadtime em dias corridos — dta_entrada - dta_emissao. Calculado no dbt.
+      - name: produto_id
+        description: Código sequencial do produto (FK dim_produto_info).
+        data_tests:
+          - not_null
+      - name: nro_docto
+        description: Número do documento (NF).
+      - name: fornecedor_id
+        description: Código sequencial do fornecedor (FK dim_fornecedor_info via ge_pessoa).
+        data_tests:
+          - not_null
+      - name: nro_documento
+        description: Chave composta do documento — nroempresa || nrodocto || seqfornecedor.
+        data_tests:
+          - not_null
+      - name: cod_geral_oper
+        description: Código da operação. Compras diretas = 1, 11. Devoluções ao fornecedor = 105, 107.
+        data_tests:
+          - not_null
+      - name: operador_id
+        description: Código do operador responsável pelo lançamento.
+      - name: qtd_embalagem
+        description: Quantidade da embalagem padrão.
+      - name: quantidade
+        description: Quantidade líquida do item.
+      - name: vlr_entrada
+        description: Valor de entrada.
+      - name: vlr_custo_bruto
+        description: Custo bruto de entrada.
+      - name: vlr_custo_liquido
+        description: Custo líquido fiscal de entrada.
+      - name: vlr_produto
+        description: Valor do produto.
+      - name: vlr_total_nf
+        description: Valor total da nota fiscal.
+      - name: vlr_descontos
+        description: Total de descontos aplicados.
+      - name: vlr_custo_fiscal_total
+        description: Custo fiscal total de entrada (MRL_PRODUTOEMPRESA × quantidade).
+      - name: prazo_medio_pagamento
+        description: Prazo médio de pagamento ponderado pelo valor da NF.
+      - name: carregado_em
+        description: Timestamp da última carga do pipeline Hop.
+        data_tests:
+          - not_null
+
   - name: fato_venda
     description: >
       Fato de vendas PDV da rede de varejo. Histórico acumulado com carregamento
@@ -85,6 +153,55 @@ models:
   # ---------------------------------------------------------------------------
   # Marts
   # ---------------------------------------------------------------------------
+  - name: mart_leadtime_fornecedor
+    description: >
+      Mart de leadtime real de entrega por fornecedor × loja × mês. tag:monthly.
+      Grain: fornecedor_id × empresa_id × mes_referencia.
+      Filtrado em compras diretas (cod_geral_oper IN (1, 11)). Outliers excluídos:
+      leadtime negativo (erro de data) e acima de 180 dias.
+      Enriquecido com prazo cadastrado do dim_fornecedor_info para comparação real vs prometido.
+    columns:
+      - name: fornecedor_id
+        description: Código sequencial do fornecedor. Compõe a chave do grain.
+        data_tests:
+          - not_null
+      - name: empresa_id
+        description: Código da loja. Compõe a chave do grain.
+        data_tests:
+          - not_null
+      - name: mes_referencia
+        description: Primeiro dia do mês de referência (dta_entrada truncada). Compõe a chave do grain.
+        data_tests:
+          - not_null
+      - name: qtd_notas
+        description: Quantidade de notas fiscais de entrada no período.
+      - name: media_leadtime
+        description: Média de dias de leadtime (dta_entrada - dta_emissao).
+      - name: min_leadtime
+        description: Menor leadtime do período.
+      - name: max_leadtime
+        description: Maior leadtime do período.
+      - name: desvio_padrao_leadtime
+        description: Desvio padrão do leadtime — indica consistência do fornecedor.
+      - name: mediana_leadtime
+        description: Mediana do leadtime — menos sensível a outliers que a média.
+      - name: media_leadtime_ponderado
+        description: Média de leadtime ponderada pelo vlr_total_nf — prioriza NFs de maior valor.
+      - name: vlr_total_nf
+        description: Soma dos valores totais das NFs no período.
+      - name: fornecedor
+        description: Razão social do fornecedor (de dim_fornecedor_info).
+      - name: fornecedor_id_nome
+        description: Chave de exibição do fornecedor — lpad(id,5,'0') || ' - ' || razao_social.
+      - name: prazo_cadastrado
+        description: Prazo médio de entrega cadastrado no Consinco (maf_fornecdivisao.pzomedentrega).
+      - name: atraso_cadastrado
+        description: Prazo médio de atraso cadastrado no Consinco (maf_fornecdivisao.pzomedatraso).
+      - name: carregado_em
+        description: Timestamp do build dbt que gerou esta versão do mart.
+        data_tests:
+          - not_null
+
   - name: mart_curva_abc
     description: >
       Curva ABC de produtos por loja, calculada sobre os últimos 12 meses a partir
