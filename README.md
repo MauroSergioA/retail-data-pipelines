@@ -48,7 +48,7 @@ graph TB
     end
 
     subgraph Extração["Extração — Apache Hop 2.10.0"]
-        Hop[workflow_diario.hwf\n18 pipelines JDBC]
+        Hop[workflow_consinco.hwf\n18 pipelines JDBC]
     end
 
     subgraph Armazenamento["PostgreSQL 18"]
@@ -190,7 +190,7 @@ retail-data-pipelines/
 ├── .env.example            # Variáveis necessárias (sem valores reais)
 ├── consinco/               # Pipelines Hop (.hpl) — uma por tabela Oracle
 ├── workflows/
-│   └── workflow_diario.hwf # Workflow principal diário
+│   └── workflow_consinco.hwf # Workflow diário Consinco (Oracle)
 ├── metadata/
 │   └── rdbms/              # Conexões Hop (postgresql-server, oracle-consinco)
 ├── transform/              # Projeto dbt completo
@@ -241,7 +241,7 @@ Chamadas `POST /run` requerem o header `X-Api-Key: <TRIGGER_API_KEY>`. O endpoin
 
 | Endpoint | Método | Descrição |
 | --- | --- | --- |
-| `/run` | POST | Inicia `workflow_diario.hwf` em background. Retorna `{"status":"started"}` imediatamente. Retorna 409 se já estiver rodando. |
+| `/run` | POST | Inicia `workflow_consinco.hwf` em background. Retorna `{"status":"started"}` imediatamente. Retorna 409 se já estiver rodando. |
 | `/health` | GET | `{"status":"idle"}` ou `{"status":"running"}` |
 
 ### dbt-server.py — porta 8000

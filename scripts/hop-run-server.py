@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""HTTP trigger server for Apache Hop. POST /run starts workflow_diario in background."""
+"""HTTP trigger server for Apache Hop. POST /run starts workflow_consinco in background."""
 import http.server
 import subprocess
 import threading
@@ -19,7 +19,7 @@ def _run():
                 "/opt/hop/hop-run.sh",
                 "--project=retail",
                 "--environment=prod",
-                "--file=workflows/workflow_diario.hwf",
+                "--file=workflows/workflow_consinco.hwf",
                 "--runconfig=local",
             ],
         )
