@@ -1,17 +1,33 @@
 #!/usr/bin/env python3
-"""HTTP trigger server for Apache Hop. POST /run starts workflow_consinco in background."""
+"""HTTP trigger server for Apache Hop. POST /run starts a workflow in background."""
 import http.server
 import subprocess
 import threading
 import json
 import os
+import re
 
 _lock = threading.Lock()
 _running = False
 _API_KEY = os.environ.get("TRIGGER_API_KEY", "")
 
+DEFAULT_WORKFLOW = "workflow_consinco"
+_WORKFLOW_RE = re.compile(r'^[\w-]+$')
 
-def _run():
+
+def _parse_workflow(path):
+    """Extract ?workflow= from path, defaulting to DEFAULT_WORKFLOW. Sanitized."""
+    if "?" in path:
+        qs = path.split("?", 1)[1]
+        for part in qs.split("&"):
+            if part.startswith("workflow="):
+                name = part[9:]
+                if _WORKFLOW_RE.match(name):
+                    return name
+    return DEFAULT_WORKFLOW
+
+
+def _run(workflow):
     global _running
     try:
         subprocess.run(
@@ -19,7 +35,7 @@ def _run():
                 "/opt/hop/hop-run.sh",
                 "--project=retail",
                 "--environment=prod",
-                "--file=workflows/workflow_consinco.hwf",
+                f"--file=workflows/{workflow}.hwf",
                 "--runconfig=local",
             ],
         )
@@ -47,14 +63,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
         global _running
         if not self._check_auth():
             return
-        if self.path == "/run":
+        if self.path.startswith("/run"):
+            workflow = _parse_workflow(self.path)
             with _lock:
                 if _running:
                     self._respond(409, {"status": "already running"})
                     return
                 _running = True
-            threading.Thread(target=_run, daemon=True).start()
-            self._respond(200, {"status": "started"})
+            threading.Thread(target=_run, args=(workflow,), daemon=True).start()
+            self._respond(200, {"status": "started", "workflow": workflow})
         else:
             self._respond(404, {"error": "not found"})
 
