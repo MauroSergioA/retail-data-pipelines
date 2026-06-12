@@ -23,3 +23,5 @@ models:
     dw:
       +materialized: table
       +schema: gold
+      mart_curva_abc:
+        +tags: ['monthly']

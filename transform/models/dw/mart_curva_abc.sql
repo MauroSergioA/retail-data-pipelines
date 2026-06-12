@@ -15,8 +15,8 @@
     a mais adequada. Ex: ruptura usa abc_valor_categoria (impacto financeiro
     dentro da categoria); negociação com fornecedor usa abc_valor_rede.
 
-    Recalcular semanalmente — a curva de 12 meses não muda de forma relevante
-    dia a dia e o custo de varrer a fato_venda inteira não se justifica diário.
+    Recalcular mensalmente (tag:monthly) — a curva de 12 meses não muda de forma
+    relevante semana a semana. Excluído do dbt run diário; roda via n8n no dia 1.
 */
 
 {{ config(materialized='table') }}

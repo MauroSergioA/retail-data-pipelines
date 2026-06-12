@@ -42,6 +42,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             ]
             if select:
                 cmd += ["--select", select]
+            else:
+                cmd += ["--exclude", "tag:monthly"]
 
             result = subprocess.run(cmd, capture_output=True, text=True)
             status = 200 if result.returncode == 0 else 500
