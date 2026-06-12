@@ -4,6 +4,7 @@ import http.server
 import subprocess
 import json
 import os
+from urllib.parse import unquote
 
 DBT_PROJECT_DIR = "/dbt"
 DBT_PROFILES_DIR = "/home/dbt_user/.dbt"
@@ -32,7 +33,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 qs = self.path.split("?", 1)[1]
                 for part in qs.split("&"):
                     if part.startswith("select="):
-                        select = part[7:]
+                        select = unquote(part[7:])
 
             cmd = [
                 "dbt", "run",
