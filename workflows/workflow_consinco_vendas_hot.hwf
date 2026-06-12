@@ -42,7 +42,7 @@
       <clear_rows>N</clear_rows>
       <create_parent_folder>N</create_parent_folder>
       <exec_per_row>N</exec_per_row>
-      <filename>C:\Projetos\retail-data-pipelines\consinco\maxv_abcdistribbase.hpl</filename>
+      <filename>${PROJECT_HOME}/consinco/maxv_abcdistribbase.hpl</filename>
       <loglevel>Basic</loglevel>
       <parameters>
         <parameter>
