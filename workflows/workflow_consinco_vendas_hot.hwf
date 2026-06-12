@@ -78,8 +78,8 @@
       <proxy_host/>
       <proxy_port/>
       <run_every_row>N</run_every_row>
-      <targetfilename/>
-      <targetfilename_extension/>
+      <targetfilename>/tmp/hop-hot-webhook-response</targetfilename>
+      <targetfilename_extension>txt</targetfilename_extension>
       <upload_fieldname/>
       <uploadfilename/>
       <url>${HOP_HOT_WEBHOOK_URL}</url>
