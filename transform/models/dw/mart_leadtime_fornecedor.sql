@@ -1,22 +1,22 @@
-{{ config(
-    materialized='table',
-    tags=['monthly']
-) }}
+{{ config(materialized='table', tags=['monthly']) }}
 
--- Leadtime real de entrega por fornecedor × loja × mês.
--- Grain: fornecedor_id × empresa_id × mes_referencia.
--- Filtrado em compras diretas (cod_geral_oper IN (1, 11)) — operações de entrada de mercadoria.
--- Outliers excluídos: leadtime negativo (erro de data no Oracle) e acima de 180 dias.
+WITH periodo AS (
+    SELECT
+        MAX(dta_entrada)                             AS data_fim,
+        MAX(dta_entrada) - INTERVAL '6 months'       AS data_inicio
+    FROM {{ ref('fato_entrada') }}
+),
 
-WITH base AS (
+base AS (
     SELECT
         fe.fornecedor_id,
         fe.empresa_id,
-        DATE_TRUNC('month', fe.dta_entrada)::DATE            AS mes_referencia,
         fe.dias_leadtime,
         fe.vlr_total_nf
     FROM {{ ref('fato_entrada') }} fe
-    WHERE fe.cod_geral_oper IN (1, 11)
+    CROSS JOIN periodo p
+    WHERE fe.cod_geral_oper IN (1, 11, 105, 107, 200, 205)
+      AND fe.dta_entrada BETWEEN p.data_inicio AND p.data_fim
       AND fe.dias_leadtime >= 0
       AND fe.dias_leadtime <= 180
 ),
@@ -25,7 +25,6 @@ agregado AS (
     SELECT
         fornecedor_id,
         empresa_id,
-        mes_referencia,
         COUNT(*)                                             AS qtd_notas,
         ROUND(AVG(dias_leadtime), 1)                        AS media_leadtime,
         MIN(dias_leadtime)                                   AS min_leadtime,
@@ -41,13 +40,12 @@ agregado AS (
             1
         )                                                    AS media_leadtime_ponderado
     FROM base
-    GROUP BY fornecedor_id, empresa_id, mes_referencia
+    GROUP BY fornecedor_id, empresa_id
 )
 
 SELECT
     a.fornecedor_id,
     a.empresa_id,
-    a.mes_referencia,
     a.qtd_notas,
     a.media_leadtime,
     a.min_leadtime,
@@ -56,11 +54,12 @@ SELECT
     a.mediana_leadtime,
     a.media_leadtime_ponderado,
     a.vlr_total_nf,
-    f.nome_razao                                             AS fornecedor,
-    f.nome_razao_id_nome                                     AS fornecedor_id_nome,
     f.prazo_med_entrega                                      AS prazo_cadastrado,
     f.prazo_med_atraso                                       AS atraso_cadastrado,
+    p.data_inicio                                            AS periodo_inicio,
+    p.data_fim                                               AS periodo_fim,
     CURRENT_TIMESTAMP                                        AS carregado_em
 FROM agregado a
+CROSS JOIN periodo p
 LEFT JOIN {{ ref('dim_fornecedor_info') }} f
     ON a.fornecedor_id = f.fornecedor_id

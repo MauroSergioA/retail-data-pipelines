@@ -42,11 +42,11 @@ models:
         data_tests:
           - not_null
       - name: cod_geral_oper
-        description: Código da operação. Compras diretas = 1, 11. Devoluções ao fornecedor = 105, 107.
+        description: "Código da operação. Compras = 1, 11, 105, 107, 200, 205. Devoluções ao fornecedor = 802."
         data_tests:
           - not_null
-      - name: operador_id
-        description: Código do operador responsável pelo lançamento.
+      - name: operador
+        description: Identificação do operador responsável pelo lançamento (pode ser nome ou código).
       - name: qtd_embalagem
         description: Quantidade da embalagem padrão.
       - name: quantidade
@@ -155,11 +155,12 @@ models:
   # ---------------------------------------------------------------------------
   - name: mart_leadtime_fornecedor
     description: >
-      Mart de leadtime real de entrega por fornecedor × loja × mês. tag:monthly.
-      Grain: fornecedor_id × empresa_id × mes_referencia.
-      Filtrado em compras diretas (cod_geral_oper IN (1, 11)). Outliers excluídos:
+      Mart de leadtime real de entrega por fornecedor × loja. tag:monthly.
+      Grain: fornecedor_id × empresa_id. Janela: últimos 6 meses a partir de MAX(dta_entrada).
+      Filtrado em operações de compra (cod_geral_oper IN (1, 11, 105, 107, 200, 205)). Outliers excluídos:
       leadtime negativo (erro de data) e acima de 180 dias.
       Enriquecido com prazo cadastrado do dim_fornecedor_info para comparação real vs prometido.
+      Projetado para alimentar cálculo de estoque de segurança.
     columns:
       - name: fornecedor_id
         description: Código sequencial do fornecedor. Compõe a chave do grain.
@@ -169,24 +170,20 @@ models:
         description: Código da loja. Compõe a chave do grain.
         data_tests:
           - not_null
-      - name: mes_referencia
-        description: Primeiro dia do mês de referência (dta_entrada truncada). Compõe a chave do grain.
-        data_tests:
-          - not_null
       - name: qtd_notas
-        description: Quantidade de notas fiscais de entrada no período.
+        description: Quantidade de notas fiscais de entrada nos últimos 6 meses.
       - name: media_leadtime
-        description: Média de dias de leadtime (dta_entrada - dta_emissao).
+        description: Média simples de dias de leadtime (dta_entrada - dta_emissao).
       - name: min_leadtime
         description: Menor leadtime do período.
       - name: max_leadtime
         description: Maior leadtime do período.
       - name: desvio_padrao_leadtime
-        description: Desvio padrão do leadtime — indica consistência do fornecedor.
+        description: Desvio padrão do leadtime — indica consistência do fornecedor. Usado em fórmulas de estoque de segurança.
       - name: mediana_leadtime
         description: Mediana do leadtime — menos sensível a outliers que a média.
       - name: media_leadtime_ponderado
-        description: Média de leadtime ponderada pelo vlr_total_nf — prioriza NFs de maior valor.
+        description: Média de leadtime ponderada pelo vlr_total_nf — prioriza NFs de maior valor financeiro.
       - name: vlr_total_nf
         description: Soma dos valores totais das NFs no período.
       - name: fornecedor
@@ -197,6 +194,10 @@ models:
         description: Prazo médio de entrega cadastrado no Consinco (maf_fornecdivisao.pzomedentrega).
       - name: atraso_cadastrado
         description: Prazo médio de atraso cadastrado no Consinco (maf_fornecdivisao.pzomedatraso).
+      - name: periodo_inicio
+        description: Data de início da janela de 6 meses utilizada no cálculo.
+      - name: periodo_fim
+        description: Data de fim da janela — MAX(dta_entrada) em fato_entrada no momento do build.
       - name: carregado_em
         description: Timestamp do build dbt que gerou esta versão do mart.
         data_tests:

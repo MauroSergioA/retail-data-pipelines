@@ -19,6 +19,25 @@ fornec_produto AS (
     FROM {{ ref('dim_produto_info') }}
 ),
 
+fornec_ultima_entrada AS (
+    SELECT DISTINCT ON (produto_id, empresa_id)
+        produto_id,
+        empresa_id,
+        fornecedor_id AS fornecedor_ultima_entrada_id
+    FROM {{ ref('fato_entrada') }}
+    WHERE cod_geral_oper IN (1, 11, 105, 107, 200, 205)
+    ORDER BY produto_id, empresa_id, dta_entrada DESC
+),
+
+tempo_entrega AS (
+    SELECT
+        fornecedor_id,
+        empresa_id,
+        media_leadtime          AS tempo_entrega_medio_dias,
+        desvio_padrao_leadtime  AS tempo_entrega_desvio_padrao
+    FROM {{ ref('mart_leadtime_fornecedor') }}
+),
+
 promoc_vigente AS (
     SELECT DISTINCT ON (pi.produto_id, pi.empresa_id, pi.segmento_id)
         pi.produto_id,
@@ -48,8 +67,12 @@ SELECT
     pe.empresa_id,
     -- conveniência: filtro de loja ativa sem precisar de join
     e.status_empresa,
-    -- fornecedor principal (FK para dim_fornecedor_info)
+    -- fornecedores (FK para dim_fornecedor_info)
     fp.fornecedor_principal_id,
+    fue.fornecedor_ultima_entrada_id,
+    -- tempo de entrega (do fornecedor da última entrada — snapshot mensal)
+    te.tempo_entrega_medio_dias,
+    te.tempo_entrega_desvio_padrao,
     -- status por loja
     pe.status_compra,
     pr.status_venda,
@@ -124,8 +147,12 @@ SELECT
     -- auditoria
     pe.carregado_em
 FROM pe
-LEFT JOIN fornec_produto fp ON fp.produto_id   = pe.produto_id
-LEFT JOIN empresa        e  ON e.empresa_id    = pe.empresa_id
+LEFT JOIN fornec_produto       fp  ON fp.produto_id          = pe.produto_id
+LEFT JOIN fornec_ultima_entrada fue ON fue.produto_id         = pe.produto_id
+                                   AND fue.empresa_id         = pe.empresa_id
+LEFT JOIN tempo_entrega        te  ON te.fornecedor_id        = fue.fornecedor_ultima_entrada_id
+                                   AND te.empresa_id          = pe.empresa_id
+LEFT JOIN empresa              e   ON e.empresa_id            = pe.empresa_id
 LEFT JOIN preco          pr ON pr.produto_id   = pe.produto_id
                            AND pr.empresa_id   = pe.empresa_id
                            AND pr.segmento_id  = e.segmento_principal

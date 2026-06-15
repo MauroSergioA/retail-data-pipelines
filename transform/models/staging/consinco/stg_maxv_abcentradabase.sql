@@ -12,7 +12,7 @@ SELECT
     seqfornecedor::INTEGER                                   AS fornecedor_id,
     nrodocumento::TEXT                                       AS nro_documento,
     codgeraloper::INTEGER                                    AS cod_geral_oper,
-    operador::INTEGER                                        AS operador_id,
+    operador::TEXT                                           AS operador,
     qtdembalagem::NUMERIC                                    AS qtd_embalagem,
     quantidade::NUMERIC                                      AS quantidade,
     vlrentrada::NUMERIC                                      AS vlr_entrada,

@@ -42,8 +42,8 @@ models:
         description: Código da operação. Sem filtro — todos os CGOs são mantidos.
         data_tests:
           - not_null
-      - name: operador_id
-        description: Código do operador responsável pelo lançamento.
+      - name: operador
+        description: Identificação do operador responsável pelo lançamento (pode ser nome ou código).
       - name: qtd_embalagem
         description: Quantidade da embalagem padrão (via FPADRAOEMBVENDA2).
       - name: quantidade

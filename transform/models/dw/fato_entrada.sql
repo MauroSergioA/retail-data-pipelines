@@ -2,7 +2,7 @@
     materialized='incremental',
     unique_key=[
         'dta_entrada', 'nro_documento', 'produto_id',
-        'cod_geral_oper', 'operador_id', 'qtd_embalagem'
+        'cod_geral_oper', 'operador', 'qtd_embalagem'
     ],
     on_schema_change='append_new_columns',
     incremental_strategy='delete+insert'
@@ -27,7 +27,7 @@ SELECT
     fornecedor_id,
     nro_documento,
     cod_geral_oper,
-    operador_id,
+    operador,
     qtd_embalagem,
     quantidade,
     vlr_entrada,
