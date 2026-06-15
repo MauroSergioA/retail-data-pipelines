@@ -146,7 +146,9 @@ automaticamente via GitHub webhook.
 | `dim_produto_info` | Dimensão | ✅ produção |
 | `dim_produto_empresa` | Dimensão | ✅ produção |
 | `fato_venda` | Fato incremental | ✅ produção |
+| `fato_entrada` | Fato incremental | ✅ produção |
 | `mart_curva_abc` | Mart | ✅ produção |
+| `mart_tempo_entrega_fornecedor` | Mart | ✅ produção |
 
 ### Roadmap
 
@@ -190,7 +192,8 @@ retail-data-pipelines/
 ├── .env.example            # Variáveis necessárias (sem valores reais)
 ├── consinco/               # Pipelines Hop (.hpl) — uma por tabela Oracle
 ├── workflows/
-│   └── workflow_consinco.hwf # Workflow diário Consinco (Oracle)
+│   ├── workflow_consinco.hwf             # Workflow cold (~20 tabelas Oracle → bronze)
+│   └── workflow_consinco_vendas_hot.hwf  # Workflow hot (vendas + entradas, 4×/dia)
 ├── metadata/
 │   └── rdbms/              # Conexões Hop (postgresql-server, oracle-consinco)
 ├── transform/              # Projeto dbt completo

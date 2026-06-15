@@ -511,13 +511,10 @@
       <create_parent_folder>N</create_parent_folder>
       <exec_per_row>N</exec_per_row>
       <filename>${PROJECT_HOME}/consinco/maxv_abcentradabase.hpl</filename>
-      <logext/>
-      <logfile/>
       <loglevel>Basic</loglevel>
       <parameters>
         <parameter>
           <name>WINDOW_DAYS</name>
-          <stream_name/>
           <value>90</value>
         </parameter>
         <pass_all_parameters>Y</pass_all_parameters>
@@ -528,7 +525,7 @@
       <set_logfile>N</set_logfile>
       <wait_until_finished>Y</wait_until_finished>
       <parallel>N</parallel>
-      <xloc>240</xloc>
+      <xloc>96</xloc>
       <yloc>384</yloc>
       <attributes_hac/>
     </action>
@@ -548,7 +545,7 @@
       <targetfilename>/tmp/hop-response.txt</targetfilename>
       <url>${HOP_WEBHOOK_FINISHED_URL}</url>
       <parallel>N</parallel>
-      <xloc>96</xloc>
+      <xloc>1712</xloc>
       <yloc>384</yloc>
       <attributes_hac/>
     </action>
@@ -568,8 +565,8 @@
       <targetfilename>/tmp/hop-error-response.txt</targetfilename>
       <url>${HOP_WEBHOOK_ERROR_URL}</url>
       <parallel>N</parallel>
-      <xloc>96</xloc>
-      <yloc>512</yloc>
+      <xloc>832</xloc>
+      <yloc>672</yloc>
       <attributes_hac/>
     </action>
     <action>
@@ -584,13 +581,10 @@
       <create_parent_folder>N</create_parent_folder>
       <exec_per_row>N</exec_per_row>
       <filename>${PROJECT_HOME}/consinco/maxv_abcdistribbase.hpl</filename>
-      <logext/>
-      <logfile/>
       <loglevel>Basic</loglevel>
       <parameters>
         <parameter>
           <name>WINDOW_DAYS</name>
-          <stream_name/>
           <value>5</value>
         </parameter>
         <pass_all_parameters>Y</pass_all_parameters>
