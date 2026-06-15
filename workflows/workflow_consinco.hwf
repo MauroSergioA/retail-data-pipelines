@@ -553,6 +553,26 @@
       <attributes_hac/>
     </action>
     <action>
+      <name>Notificar Erro</name>
+      <description/>
+      <type>HTTP</type>
+      <attributes/>
+      <addfilenameresult>Y</addfilenameresult>
+      <date_time_added>N</date_time_added>
+      <file_appended>N</file_appended>
+      <headers>
+</headers>
+      <ignore_ssl>N</ignore_ssl>
+      <password>Encrypted </password>
+      <run_every_row>N</run_every_row>
+      <targetfilename>/tmp/hop-error-response.txt</targetfilename>
+      <url>${HOP_WEBHOOK_ERROR_URL}</url>
+      <parallel>N</parallel>
+      <xloc>96</xloc>
+      <yloc>512</yloc>
+      <attributes_hac/>
+    </action>
+    <action>
       <name>maxv_abcdistribbase.hpl</name>
       <description/>
       <type>PIPELINE</type>
@@ -732,6 +752,146 @@
       <to>Notificar n8n</to>
       <enabled>Y</enabled>
       <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>max_empresa.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>vw_pdv.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>mad_segmento.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>map_produto.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>map_familia.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>map_marca.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>map_prodcodigo.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>map_famfornec.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>maf_fornecdivisao.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>etlv_categoria.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>ge_pessoa.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>madv_origempedido.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>madv_situacaoped.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>madv_tippedido.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>mrl_produtoempresa.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>mrl_prodempseg.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>mrl_promocao.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>mrl_promocaoitem.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>maxv_abcdistribbase.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>maxv_abcentradabase.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
       <unconditional>N</unconditional>
     </hop>
   </hops>

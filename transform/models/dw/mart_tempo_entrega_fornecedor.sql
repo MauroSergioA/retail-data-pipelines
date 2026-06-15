@@ -3,7 +3,7 @@
 WITH periodo AS (
     SELECT
         MAX(dta_entrada)                             AS data_fim,
-        MAX(dta_entrada) - INTERVAL '6 months'       AS data_inicio
+        MAX(dta_entrada) - INTERVAL '12 months'      AS data_inicio
     FROM {{ ref('fato_entrada') }}
 ),
 

@@ -156,7 +156,7 @@ models:
   - name: mart_tempo_entrega_fornecedor
     description: >
       Mart de tempo de entrega real por fornecedor × loja. tag:monthly.
-      Grain: fornecedor_id × empresa_id. Janela: últimos 6 meses a partir de MAX(dta_entrada).
+      Grain: fornecedor_id × empresa_id. Janela: últimos 12 meses a partir de MAX(dta_entrada).
       Tempo de entrega = dta_entrada - dta_emissao (trânsito da NF até a entrada física).
       Filtrado em operações de compra (cod_geral_oper IN (1, 11, 105, 107, 200, 205)). Outliers excluídos:
       tempo negativo (erro de data) e acima de 180 dias.
@@ -450,6 +450,14 @@ models:
           - not_null
       - name: status_empresa
         description: "Status da loja: ATIVA ou INATIVA. Conveniência para filtro sem join com dim_empresa_info."
+      - name: fornecedor_principal_id
+        description: FK para dim_fornecedor_info. Fornecedor principal cadastrado na família do produto (dim_produto_info).
+      - name: fornecedor_ultima_entrada_id
+        description: FK para dim_fornecedor_info. Fornecedor da NF de entrada mais recente em fato_entrada. Atualizado diariamente.
+      - name: tempo_entrega_medio_dias
+        description: Média de dias entre emissão e entrada da NF nos últimos 12 meses (de mart_tempo_entrega_fornecedor). Atualizado mensalmente.
+      - name: tempo_entrega_desvio_padrao
+        description: Desvio padrão do tempo de entrega nos últimos 12 meses. Componente da fórmula de estoque de segurança.
       - name: status_compra
         description: "Status de compra do produto nesta loja: ATIVO, INATIVO ou NÃO INFORMADO."
         data_tests:
