@@ -153,14 +153,15 @@ models:
   # ---------------------------------------------------------------------------
   # Marts
   # ---------------------------------------------------------------------------
-  - name: mart_leadtime_fornecedor
+  - name: mart_tempo_entrega_fornecedor
     description: >
-      Mart de leadtime real de entrega por fornecedor × loja. tag:monthly.
+      Mart de tempo de entrega real por fornecedor × loja. tag:monthly.
       Grain: fornecedor_id × empresa_id. Janela: últimos 6 meses a partir de MAX(dta_entrada).
+      Tempo de entrega = dta_entrada - dta_emissao (trânsito da NF até a entrada física).
       Filtrado em operações de compra (cod_geral_oper IN (1, 11, 105, 107, 200, 205)). Outliers excluídos:
-      leadtime negativo (erro de data) e acima de 180 dias.
-      Enriquecido com prazo cadastrado do dim_fornecedor_info para comparação real vs prometido.
-      Projetado para alimentar cálculo de estoque de segurança.
+      tempo negativo (erro de data) e acima de 180 dias.
+      Alimenta dim_produto_empresa via fornecedor_ultima_entrada_id.
+      No futuro, mart_leadtime_fornecedor cobrirá o ciclo completo (pedido → entrada).
     columns:
       - name: fornecedor_id
         description: Código sequencial do fornecedor. Compõe a chave do grain.

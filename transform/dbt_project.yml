@@ -25,5 +25,5 @@ models:
       +schema: gold
       mart_curva_abc:
         +tags: ['monthly']
-      mart_leadtime_fornecedor:
+      mart_tempo_entrega_fornecedor:
         +tags: ['monthly']

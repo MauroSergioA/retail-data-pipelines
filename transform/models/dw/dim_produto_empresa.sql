@@ -35,7 +35,7 @@ tempo_entrega AS (
         empresa_id,
         media_leadtime          AS tempo_entrega_medio_dias,
         desvio_padrao_leadtime  AS tempo_entrega_desvio_padrao
-    FROM {{ ref('mart_leadtime_fornecedor') }}
+    FROM {{ ref('mart_tempo_entrega_fornecedor') }}
 ),
 
 promoc_vigente AS (
