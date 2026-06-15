@@ -518,7 +518,7 @@
         <parameter>
           <name>WINDOW_DAYS</name>
           <stream_name/>
-          <value>5</value>
+          <value>90</value>
         </parameter>
         <pass_all_parameters>Y</pass_all_parameters>
       </parameters>

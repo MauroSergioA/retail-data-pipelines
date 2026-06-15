@@ -62,6 +62,36 @@
       <attributes_hac/>
     </action>
     <action>
+      <name>maxv_abcentradabase.hpl</name>
+      <description/>
+      <type>PIPELINE</type>
+      <attributes/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <clear_files>N</clear_files>
+      <clear_rows>N</clear_rows>
+      <create_parent_folder>N</create_parent_folder>
+      <exec_per_row>N</exec_per_row>
+      <filename>${PROJECT_HOME}/consinco/maxv_abcentradabase.hpl</filename>
+      <loglevel>Basic</loglevel>
+      <parameters>
+        <parameter>
+          <name>WINDOW_DAYS</name>
+          <value>0</value>
+        </parameter>
+        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>
+      <params_from_previous>N</params_from_previous>
+      <run_configuration>local</run_configuration>
+      <set_append_logfile>N</set_append_logfile>
+      <set_logfile>N</set_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <parallel>N</parallel>
+      <xloc>384</xloc>
+      <yloc>128</yloc>
+      <attributes_hac/>
+    </action>
+    <action>
       <name>Notificar n8n</name>
       <description/>
       <type>HTTP</type>
@@ -86,8 +116,28 @@
       <url_fieldname/>
       <username/>
       <parallel>N</parallel>
-      <xloc>496</xloc>
+      <xloc>560</xloc>
       <yloc>128</yloc>
+      <attributes_hac/>
+    </action>
+    <action>
+      <name>Notificar Erro</name>
+      <description/>
+      <type>HTTP</type>
+      <attributes/>
+      <addfilenameresult>Y</addfilenameresult>
+      <date_time_added>N</date_time_added>
+      <file_appended>N</file_appended>
+      <headers>
+</headers>
+      <ignore_ssl>N</ignore_ssl>
+      <password>Encrypted </password>
+      <run_every_row>N</run_every_row>
+      <targetfilename>/tmp/hop-hot-error-response.txt</targetfilename>
+      <url>${HOP_WEBHOOK_ERROR_URL}</url>
+      <parallel>N</parallel>
+      <xloc>384</xloc>
+      <yloc>256</yloc>
       <attributes_hac/>
     </action>
   </actions>
@@ -101,9 +151,30 @@
     </hop>
     <hop>
       <from>maxv_abcdistribbase.hpl</from>
+      <to>maxv_abcentradabase.hpl</to>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>maxv_abcentradabase.hpl</from>
       <to>Notificar n8n</to>
       <enabled>Y</enabled>
       <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>maxv_abcdistribbase.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>maxv_abcentradabase.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
       <unconditional>N</unconditional>
     </hop>
   </hops>
