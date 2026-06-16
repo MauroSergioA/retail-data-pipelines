@@ -16,7 +16,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://host.docker.internal:8080/run",
+        "url": "={{ $env.HOP_URL }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "options": {
@@ -62,7 +62,7 @@
     },
     {
       "parameters": {
-        "chatId": "<TELEGRAM_CHAT_ID>",
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
         "text": "⚠️ Hop já estava rodando às 01:00\nPipeline anterior pode estar travado.\nVerifique: Dokploy → hop-server → Logs",
         "additionalFields": { "appendAttribution": false }
       },
@@ -79,7 +79,7 @@
     },
     {
       "parameters": {
-        "chatId": "<TELEGRAM_CHAT_ID>",
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
         "text": "❌ Falha ao disparar Hop (01:00)\nServidor não respondeu ou retornou erro inesperado.\nVerifique: Dokploy → hop-server → Status",
         "additionalFields": { "appendAttribution": false }
       },

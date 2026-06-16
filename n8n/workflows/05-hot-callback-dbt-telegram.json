@@ -27,13 +27,13 @@
             {
               "id": "72592ba7-28e0-42d2-9fc8-5b46d6d956e2",
               "name": "telegram_chat_id",
-              "value": "<TELEGRAM_CHAT_ID>",
+              "value": "={{ $env.TELEGRAM_CHAT_ID }}",
               "type": "string"
             },
             {
               "id": "61026e6b-53fb-4a6d-bd56-6350e2507510",
               "name": "dbt_runner_url",
-              "value": "http://host.docker.internal:8000/run",
+              "value": "={{ $env.DBT_URL }}",
               "type": "string"
             },
             {

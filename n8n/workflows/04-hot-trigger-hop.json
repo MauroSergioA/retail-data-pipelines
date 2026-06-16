@@ -21,7 +21,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://host.docker.internal:8080/run?workflow=workflow_consinco_vendas_hot",
+        "url": "={{ $env.HOP_URL }}?workflow=workflow_consinco_vendas_hot",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "options": {
@@ -67,7 +67,7 @@
     },
     {
       "parameters": {
-        "chatId": "<TELEGRAM_CHAT_ID>",
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
         "text": "=⚠️ Hop já estava rodando (hot {{ $now.setZone('America/Sao_Paulo').toFormat('HH:mm') }})\nPipeline anterior pode estar travado.\nVerifique: Dokploy → hop-server → Logs",
         "additionalFields": { "appendAttribution": false }
       },
@@ -84,7 +84,7 @@
     },
     {
       "parameters": {
-        "chatId": "<TELEGRAM_CHAT_ID>",
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
         "text": "=❌ Falha ao disparar Hop hot ({{ $now.setZone('America/Sao_Paulo').toFormat('HH:mm') }})\nServidor não respondeu ou retornou erro inesperado.\nVerifique: Dokploy → hop-server → Status",
         "additionalFields": { "appendAttribution": false }
       },
