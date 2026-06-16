@@ -34,48 +34,42 @@ plataforma — mantendo (ou melhorando) a qualidade das entregas.
 
 ## Arquitetura
 
-```mermaid
-graph TB
-    subgraph Fontes["Fontes Externas"]
-        Oracle[(Oracle ERP\nConsinco)]
-        SQLS[(SQL Server\nAsseponto)]:::planned
-        API[APIs REST\nCobli]:::planned
-        GS[Google Sheets\nMetas]:::planned
-    end
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                         FONTES DE DADOS                              │
+│  Oracle · Consinco ERP          SQL Server · Asseponto  🔜           │
+│  API REST · Cobli  🔜           Google Sheets · Metas   🔜           │
+└──────────────────────────────────┬───────────────────────────────────┘
+                                   │  JDBC / API
+                                   ▼
+             ┌──────────────────────────────────────────┐
+             │           Apache Hop  2.10.0             │
+             │   ~20 pipelines · workflow_consinco      │
+             └────────────────────┬─────────────────────┘
+                                  │  carga raw
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  bronze.*  —  dados brutos, sem transformação                        │
+└──────────────────────────────────┬───────────────────────────────────┘
+                                   │  dbt  (staging)
+                                   ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  silver.*  —  limpeza · cast · rename  (views)                       │
+└──────────────────────────────────┬───────────────────────────────────┘
+                                   │  dbt  (dw)
+                                   ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  gold.*  —  dim_*  ·  fato_*  ·  mart_*  (tables)                   │
+└──────────────────────────────────┬───────────────────────────────────┘
+                                   │
+                                   ▼
+             ┌──────────────────────────────────────────┐
+             │          Metabase  0.50.8                │
+             │       dashboards operacionais            │
+             └──────────────────────────────────────────┘
 
-    subgraph Orquestração["Orquestração — n8n 2.25.6"]
-        n8n[Agendamento 01:00\nwebhook + Telegram]
-    end
-
-    subgraph Extração["Extração — Apache Hop 2.10.0"]
-        Hop[workflow_consinco.hwf\n18 pipelines JDBC]
-    end
-
-    subgraph Armazenamento["PostgreSQL 18"]
-        bronze[(bronze\ndados brutos)]
-        silver[(silver\nviews limpas)]
-        gold[(gold\nfatos · dimensões · marts)]
-    end
-
-    subgraph Transformação["Transformação — dbt 1.12.0-b1"]
-        dbt[25 modelos\nstaging + dw]
-    end
-
-    subgraph Consumo["Consumo"]
-        MB[Metabase 0.50.8\ndashboards operacionais]
-    end
-
-    Oracle -->|JDBC| Hop
-    n8n -->|POST /run| Hop
-    Hop -->|carga raw| bronze
-    Hop -->|webhook| n8n
-    n8n -->|POST /run| dbt
-    bronze --> dbt
-    dbt -->|views| silver
-    dbt -->|tables| gold
-    gold -->|somente leitura| MB
-
-    classDef planned stroke-dasharray: 5 5, opacity: 0.5
+  Orquestração: n8n agenda Hop (01:00 + 4×/dia) e dbt (pós-Hop + dia 1)
+  Infraestrutura: Docker Swarm + Dokploy · Cloudflare Tunnel · Ubuntu local
 ```
 
 ### Camadas de dados
@@ -145,6 +139,8 @@ automaticamente via GitHub webhook.
 | `dim_fornecedor_info` | Dimensão | ✅ produção |
 | `dim_produto_info` | Dimensão | ✅ produção |
 | `dim_produto_empresa` | Dimensão | ✅ produção |
+| `dim_calendario` | Dimensão | ✅ produção |
+| `dim_hora` | Dimensão | ✅ produção |
 | `fato_venda` | Fato incremental | ✅ produção |
 | `fato_entrada` | Fato incremental | ✅ produção |
 | `mart_curva_abc` | Mart | ✅ produção |
