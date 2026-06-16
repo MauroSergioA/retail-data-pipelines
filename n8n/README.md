@@ -52,11 +52,3 @@ Ativar todos os 6 workflows. Para os que têm webhook (02, 03, 05), fazer ciclo
 Os workflows 02, 03 e 05 usam URLs de webhook que o Hop chama ao final da extração.
 Confirmar que as variáveis no Dokploy (`HOP_WEBHOOK_FINISHED_URL`, `HOP_WEBHOOK_ERROR_URL`,
 `HOP_HOT_WEBHOOK_URL`) apontam para `https://<N8N_WEBHOOK_HOST>/webhook/<path>`.
-
----
-
-## O que foi sanitizado
-
-- `telegram_chat_id`: substituído por `<TELEGRAM_CHAT_ID>` (valor real em `docs/credenciais.md`)
-- Credenciais n8n: referenciadas por tipo, não por ID — precisam ser recriadas manualmente
-- IDs internos dos nós: mantidos para consistência de referências entre nós
