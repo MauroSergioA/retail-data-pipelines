@@ -22,34 +22,8 @@
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "72592ba7-28e0-42d2-9fc8-5b46d6d956e2",
-              "name": "telegram_chat_id",
-              "value": "={{ $env.TELEGRAM_CHAT_ID }}",
-              "type": "string"
-            },
-            {
-              "id": "61026e6b-53fb-4a6d-bd56-6350e2507510",
-              "name": "dbt_runner_url",
-              "value": "={{ $env.DBT_URL }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [-96, -16],
-      "id": "e92f2afe-51a8-47ea-b6bb-1c673eb90e49",
-      "name": "Configurações"
-    },
-    {
-      "parameters": {
         "method": "POST",
-        "url": "={{ $json.dbt_runner_url }}",
+        "url": "={{ $env.DBT_URL }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "options": { "timeout": 1800000 }
@@ -84,7 +58,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $('Configurações').item.json.telegram_chat_id }}",
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
         "text": "=✅ Pipeline concluído com sucesso!\n\n📅 {{ $now.setZone('America/Sao_Paulo').toFormat('dd/MM/yyyy HH:mm') }}\n⏱ Tempo dbt: {{ $('Executar dbt').item.json.stdout.match(/\\((\\d+(?:\\.\\d+)?)s\\)/)?.[1] ?? '?' }}s\n📦 Modelos: {{ $('Executar dbt').item.json.stdout.match(/TOTAL=(\\d+)/)?.[1] ?? '?' }} total\n✅ Sucesso: {{ $('Executar dbt').item.json.stdout.match(/PASS=(\\d+)/)?.[1] ?? '?' }}\n⚠️ Avisos: {{ $('Executar dbt').item.json.stdout.match(/WARN=(\\d+)/)?.[1] ?? '0' }}\n❌ Erros: {{ $('Executar dbt').item.json.stdout.match(/ERROR=(\\d+)/)?.[1] ?? '0' }}\n⏭ Ignorados: {{ $('Executar dbt').item.json.stdout.match(/SKIP=(\\d+)/)?.[1] ?? '0' }}",
         "additionalFields": { "appendAttribution": false, "parse_mode": "HTML" }
       },
@@ -96,7 +70,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $('Configurações').item.json.telegram_chat_id }}",
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
         "text": "=❌ Pipeline falhou na etapa dbt!\n\n📅 {{ $now.setZone('America/Sao_Paulo').toFormat('dd/MM/yyyy HH:mm') }}\n🔴 Return code: {{ $('Executar dbt').item.json.returncode }}\n📦 Total: {{ $('Executar dbt').item.json.stdout.match(/TOTAL=(\\d+)/)?.[1] ?? '?' }} modelos\n✅ Sucesso: {{ $('Executar dbt').item.json.stdout.match(/PASS=(\\d+)/)?.[1] ?? '0' }}\n❌ Erros: {{ $('Executar dbt').item.json.stdout.match(/ERROR=(\\d+)/)?.[1] ?? '?' }}\n⏭ Ignorados: {{ $('Executar dbt').item.json.stdout.match(/SKIP=(\\d+)/)?.[1] ?? '0' }}",
         "additionalFields": { "appendAttribution": false, "parse_mode": "HTML" }
       },
@@ -109,9 +83,6 @@
   ],
   "connections": {
     "Receber Sinal do Hop": {
-      "main": [[{ "node": "Configurações", "type": "main", "index": 0 }]]
-    },
-    "Configurações": {
       "main": [[{ "node": "Executar dbt", "type": "main", "index": 0 }]]
     },
     "Executar dbt": {

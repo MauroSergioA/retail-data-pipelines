@@ -15,40 +15,8 @@
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "72592ba7-28e0-42d2-9fc8-5b46d6d956e2",
-              "name": "telegram_chat_id",
-              "value": "={{ $env.TELEGRAM_CHAT_ID }}",
-              "type": "string"
-            },
-            {
-              "id": "61026e6b-53fb-4a6d-bd56-6350e2507510",
-              "name": "dbt_runner_url",
-              "value": "={{ $env.DBT_URL }}",
-              "type": "string"
-            },
-            {
-              "id": "ee69d26c-083c-478f-9982-832a68f69f3f",
-              "name": "modelos",
-              "value": "=mart_curva_abc\nmart_tempo_entrega_fornecedor",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [-160, -16],
-      "id": "e55a35e9-d418-4691-acc2-33671ed454d3",
-      "name": "Configurações"
-    },
-    {
-      "parameters": {
         "method": "POST",
-        "url": "={{ $json.dbt_runner_url }}",
+        "url": "={{ $env.DBT_URL }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendQuery": true,
@@ -56,7 +24,7 @@
           "parameters": [
             {
               "name": "select",
-              "value": "={{ $json.modelos.split('\\n').filter(m => m.trim()).join(' ') }}"
+              "value": "mart_curva_abc mart_tempo_entrega_fornecedor"
             }
           ]
         },
@@ -92,7 +60,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $('Configurações').item.json.telegram_chat_id }}",
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
         "text": "=✅ Curva ABC Mensal recalculada\n📦 {{ $json.stdout.match(/SELECT (\\d+)/)?.[1] }} linhas\n⏱ {{ new Date().toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'}) }}",
         "additionalFields": { "appendAttribution": false }
       },
@@ -104,7 +72,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $('Configurações').item.json.telegram_chat_id }}",
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
         "text": "=❌ Curva ABC Mensal falhou\n🔍 {{ $json.stderr || $json.stdout.slice(-500) }}",
         "additionalFields": { "appendAttribution": false }
       },
@@ -117,9 +85,6 @@
   ],
   "connections": {
     "Dia 1 do Mês": {
-      "main": [[{ "node": "Configurações", "type": "main", "index": 0 }]]
-    },
-    "Configurações": {
       "main": [[{ "node": "dbt - Curva ABC", "type": "main", "index": 0 }]]
     },
     "dbt - Curva ABC": {
