@@ -15,45 +15,101 @@
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "54a4c565-21e4-4d2f-9088-e61f98993cbe",
-              "name": "hop_url",
-              "value": "http://host.docker.internal:8080/run",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [-112, 0],
-      "id": "a7e5b36d-8988-4f23-9202-06015c9f226c",
-      "name": "Configurações"
-    },
-    {
-      "parameters": {
         "method": "POST",
-        "url": "={{ $json.hop_url }}",
+        "url": "http://host.docker.internal:8080/run",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
-        "options": {}
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [208, 0],
       "id": "f69bc157-b230-4d8a-a131-5aacf8ae94b7",
-      "name": "Disparar Hop"
+      "name": "Disparar Hop",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Vo79O80LNX6gh7wt",
+          "name": "Trigger API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [
+            {
+              "id": "check-started",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "started",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [500, 0],
+      "name": "Hop iniciou?"
+    },
+    {
+      "parameters": {
+        "chatId": "<TELEGRAM_CHAT_ID>",
+        "text": "⚠️ Hop já estava rodando às 01:00\nPipeline anterior pode estar travado.\nVerifique: Dokploy → hop-server → Logs",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [800, 160],
+      "name": "Avisar Hop Ocupado",
+      "credentials": {
+        "telegramApi": {
+          "id": "<TELEGRAM_CREDENTIAL_ID>",
+          "name": "SuperqueOps"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "<TELEGRAM_CHAT_ID>",
+        "text": "❌ Falha ao disparar Hop (01:00)\nServidor não respondeu ou retornou erro inesperado.\nVerifique: Dokploy → hop-server → Status",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [500, 200],
+      "name": "Avisar Falha Hop",
+      "credentials": {
+        "telegramApi": {
+          "id": "<TELEGRAM_CREDENTIAL_ID>",
+          "name": "SuperqueOps"
+        }
+      }
     }
   ],
   "connections": {
     "Agendamento Diário": {
-      "main": [[{ "node": "Configurações", "type": "main", "index": 0 }]]
-    },
-    "Configurações": {
       "main": [[{ "node": "Disparar Hop", "type": "main", "index": 0 }]]
+    },
+    "Disparar Hop": {
+      "main": [
+        [{ "node": "Hop iniciou?", "type": "main", "index": 0 }],
+        [{ "node": "Avisar Falha Hop", "type": "main", "index": 0 }]
+      ]
+    },
+    "Hop iniciou?": {
+      "main": [
+        [],
+        [{ "node": "Avisar Hop Ocupado", "type": "main", "index": 0 }]
+      ]
     }
   },
   "settings": {
