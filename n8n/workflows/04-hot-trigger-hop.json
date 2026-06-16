@@ -20,51 +20,101 @@
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "72592ba7-28e0-42d2-9fc8-5b46d6d956e2",
-              "name": "telegram_chat_id",
-              "value": "<TELEGRAM_CHAT_ID>",
-              "type": "string"
-            },
-            {
-              "id": "61026e6b-53fb-4a6d-bd56-6350e2507510",
-              "name": "hop_url",
-              "value": "http://host.docker.internal:8080/run?workflow=workflow_consinco_vendas_hot",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [-144, -32],
-      "id": "c68e08f5-e603-4efe-92d6-26f85d763b0e",
-      "name": "Configurações"
-    },
-    {
-      "parameters": {
         "method": "POST",
-        "url": "={{ $json.hop_url }}",
+        "url": "http://host.docker.internal:8080/run?workflow=workflow_consinco_vendas_hot",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
-        "options": {}
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [176, -32],
       "id": "d396c843-55a9-4a4e-b283-daa39981762c",
-      "name": "Disparar Hop Hot"
+      "name": "Disparar Hop Hot",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Vo79O80LNX6gh7wt",
+          "name": "Trigger API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [
+            {
+              "id": "check-started",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "started",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [480, -32],
+      "name": "Hop iniciou?"
+    },
+    {
+      "parameters": {
+        "chatId": "<TELEGRAM_CHAT_ID>",
+        "text": "=⚠️ Hop já estava rodando (hot {{ $now.setZone('America/Sao_Paulo').toFormat('HH:mm') }})\nPipeline anterior pode estar travado.\nVerifique: Dokploy → hop-server → Logs",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [780, 130],
+      "name": "Avisar Hop Ocupado",
+      "credentials": {
+        "telegramApi": {
+          "id": "<TELEGRAM_CREDENTIAL_ID>",
+          "name": "SuperqueOps"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "<TELEGRAM_CHAT_ID>",
+        "text": "=❌ Falha ao disparar Hop hot ({{ $now.setZone('America/Sao_Paulo').toFormat('HH:mm') }})\nServidor não respondeu ou retornou erro inesperado.\nVerifique: Dokploy → hop-server → Status",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [480, 160],
+      "name": "Avisar Falha Hop",
+      "credentials": {
+        "telegramApi": {
+          "id": "<TELEGRAM_CREDENTIAL_ID>",
+          "name": "SuperqueOps"
+        }
+      }
     }
   ],
   "connections": {
     "Agendamento": {
-      "main": [[{ "node": "Configurações", "type": "main", "index": 0 }]]
-    },
-    "Configurações": {
       "main": [[{ "node": "Disparar Hop Hot", "type": "main", "index": 0 }]]
+    },
+    "Disparar Hop Hot": {
+      "main": [
+        [{ "node": "Hop iniciou?", "type": "main", "index": 0 }],
+        [{ "node": "Avisar Falha Hop", "type": "main", "index": 0 }]
+      ]
+    },
+    "Hop iniciou?": {
+      "main": [
+        [],
+        [{ "node": "Avisar Hop Ocupado", "type": "main", "index": 0 }]
+      ]
     }
   },
   "settings": {
