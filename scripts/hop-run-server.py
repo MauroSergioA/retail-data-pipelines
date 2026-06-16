@@ -11,7 +11,7 @@ _lock = threading.Lock()
 _running = False
 _API_KEY = os.environ.get("TRIGGER_API_KEY", "")
 
-DEFAULT_WORKFLOW = "workflow_consinco"
+DEFAULT_WORKFLOW = "workflow_consinco_cold"
 _WORKFLOW_RE = re.compile(r'^[\w-]+$')
 
 
