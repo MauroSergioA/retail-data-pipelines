@@ -3,8 +3,15 @@
   "nodes": [
     {
       "parameters": {
+        "authentication": "headerAuth",
         "path": "vendas-hot",
         "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Vo79O80LNX6gh7wt",
+          "name": "Trigger API Key"
+        }
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,

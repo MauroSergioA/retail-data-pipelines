@@ -51,7 +51,7 @@ Ativar todos os 6 workflows. Para os que têm webhook (02, 03, 05), fazer ciclo
 
 Os workflows 02, 03 e 05 usam URLs de webhook que o Hop chama ao final da extração.
 Confirmar que as variáveis no Dokploy (`HOP_WEBHOOK_FINISHED_URL`, `HOP_WEBHOOK_ERROR_URL`,
-`HOP_HOT_WEBHOOK_URL`) apontam para `https://n8n-webhook.modernizaai.com/webhook/<path>`.
+`HOP_HOT_WEBHOOK_URL`) apontam para `https://<N8N_WEBHOOK_HOST>/webhook/<path>`.
 
 ---
 

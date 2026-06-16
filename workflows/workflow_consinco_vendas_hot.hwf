@@ -101,6 +101,10 @@
       <dest_fieldname/>
       <file_appended>N</file_appended>
       <headers>
+        <header>
+          <name>X-Api-Key</name>
+          <value>${TRIGGER_API_KEY}</value>
+        </header>
 </headers>
       <ignore_ssl>N</ignore_ssl>
       <non_proxy_hosts/>
@@ -129,6 +133,10 @@
       <date_time_added>N</date_time_added>
       <file_appended>N</file_appended>
       <headers>
+        <header>
+          <name>X-Api-Key</name>
+          <value>${TRIGGER_API_KEY}</value>
+        </header>
 </headers>
       <ignore_ssl>N</ignore_ssl>
       <password>Encrypted </password>
