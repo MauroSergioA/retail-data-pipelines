@@ -38,6 +38,16 @@ tempo_entrega AS (
     FROM {{ ref('mart_tempo_entrega_fornecedor') }}
 ),
 
+curva_abc AS (
+    SELECT
+        produto_id,
+        empresa_id,
+        curva_abc_valor_empresa,
+        curva_abc_valor_categoria,
+        curva_abc_valor_rede
+    FROM {{ ref('mart_curva_abc') }}
+),
+
 promoc_vigente AS (
     SELECT DISTINCT ON (pi.produto_id, pi.empresa_id, pi.segmento_id)
         pi.produto_id,
@@ -73,6 +83,10 @@ SELECT
     -- tempo de entrega (do fornecedor da última entrada — snapshot mensal)
     te.tempo_entrega_medio_dias,
     te.tempo_entrega_desvio_padrao,
+    -- curva abc (snapshot mensal)
+    abc.curva_abc_valor_empresa,
+    abc.curva_abc_valor_categoria,
+    abc.curva_abc_valor_rede,
     -- status por loja
     pe.status_compra,
     pr.status_venda,
@@ -157,6 +171,8 @@ LEFT JOIN preco          pr ON pr.produto_id   = pe.produto_id
                            AND pr.empresa_id   = pe.empresa_id
                            AND pr.segmento_id  = e.segmento_principal
                            AND pr.qtd_embalagem = 1
-LEFT JOIN promoc_vigente pv ON pv.produto_id   = pe.produto_id
+LEFT JOIN promoc_vigente pv  ON pv.produto_id   = pe.produto_id
                            AND pv.empresa_id   = pe.empresa_id
                            AND pv.segmento_id  = e.segmento_principal
+LEFT JOIN curva_abc     abc ON abc.produto_id  = pe.produto_id
+                           AND abc.empresa_id  = pe.empresa_id
