@@ -15,6 +15,15 @@ clean-targets:
   - target
   - dbt_packages
 
+seeds:
+  retail:
+    +schema: gold
+    feriados_fixos:
+      +column_types:
+        mes: integer
+        dia: integer
+        nome: varchar
+
 models:
   retail:
     staging:
