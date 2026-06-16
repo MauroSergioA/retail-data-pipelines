@@ -67,7 +67,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "chatId": "<TELEGRAM_CHAT_ID>",
         "text": "=✅ Vendas Hot atualizada\n🕐 {{ new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) }}",
         "additionalFields": { "appendAttribution": false }
       },
@@ -79,7 +79,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "chatId": "<TELEGRAM_CHAT_ID>",
         "text": "=❌ Vendas Hot falhou\n🔍 {{ $json.stderr || $json.stdout.slice(-500) }}",
         "additionalFields": { "appendAttribution": false }
       },

@@ -22,7 +22,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "chatId": "<TELEGRAM_CHAT_ID>",
         "text": "=⚠️ ERRO — Pipeline Cold\n\nUm pipeline falhou durante a extração noturna.\nVerifique os logs no Dokploy → hop-server.",
         "additionalFields": { "appendAttribution": false }
       },

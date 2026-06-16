@@ -60,7 +60,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "chatId": "<TELEGRAM_CHAT_ID>",
         "text": "=✅ Curva ABC Mensal recalculada\n📦 {{ $json.stdout.match(/SELECT (\\d+)/)?.[1] }} linhas\n⏱ {{ new Date().toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'}) }}",
         "additionalFields": { "appendAttribution": false }
       },
@@ -72,7 +72,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "chatId": "<TELEGRAM_CHAT_ID>",
         "text": "=❌ Curva ABC Mensal falhou\n🔍 {{ $json.stderr || $json.stdout.slice(-500) }}",
         "additionalFields": { "appendAttribution": false }
       },

@@ -58,7 +58,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "chatId": "<TELEGRAM_CHAT_ID>",
         "text": "=✅ Pipeline concluído com sucesso!\n\n📅 {{ $now.setZone('America/Sao_Paulo').toFormat('dd/MM/yyyy HH:mm') }}\n⏱ Tempo dbt: {{ $('Executar dbt').item.json.stdout.match(/\\((\\d+(?:\\.\\d+)?)s\\)/)?.[1] ?? '?' }}s\n📦 Modelos: {{ $('Executar dbt').item.json.stdout.match(/TOTAL=(\\d+)/)?.[1] ?? '?' }} total\n✅ Sucesso: {{ $('Executar dbt').item.json.stdout.match(/PASS=(\\d+)/)?.[1] ?? '?' }}\n⚠️ Avisos: {{ $('Executar dbt').item.json.stdout.match(/WARN=(\\d+)/)?.[1] ?? '0' }}\n❌ Erros: {{ $('Executar dbt').item.json.stdout.match(/ERROR=(\\d+)/)?.[1] ?? '0' }}\n⏭ Ignorados: {{ $('Executar dbt').item.json.stdout.match(/SKIP=(\\d+)/)?.[1] ?? '0' }}",
         "additionalFields": { "appendAttribution": false, "parse_mode": "HTML" }
       },
@@ -70,7 +70,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "chatId": "<TELEGRAM_CHAT_ID>",
         "text": "=❌ Pipeline falhou na etapa dbt!\n\n📅 {{ $now.setZone('America/Sao_Paulo').toFormat('dd/MM/yyyy HH:mm') }}\n🔴 Return code: {{ $('Executar dbt').item.json.returncode }}\n📦 Total: {{ $('Executar dbt').item.json.stdout.match(/TOTAL=(\\d+)/)?.[1] ?? '?' }} modelos\n✅ Sucesso: {{ $('Executar dbt').item.json.stdout.match(/PASS=(\\d+)/)?.[1] ?? '0' }}\n❌ Erros: {{ $('Executar dbt').item.json.stdout.match(/ERROR=(\\d+)/)?.[1] ?? '?' }}\n⏭ Ignorados: {{ $('Executar dbt').item.json.stdout.match(/SKIP=(\\d+)/)?.[1] ?? '0' }}",
         "additionalFields": { "appendAttribution": false, "parse_mode": "HTML" }
       },

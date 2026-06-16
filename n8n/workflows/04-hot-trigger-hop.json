@@ -67,7 +67,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "chatId": "<TELEGRAM_CHAT_ID>",
         "text": "=⚠️ Hop já estava rodando (hot {{ $now.setZone('America/Sao_Paulo').toFormat('HH:mm') }})\nPipeline anterior pode estar travado.\nVerifique: Dokploy → hop-server → Logs",
         "additionalFields": { "appendAttribution": false }
       },
@@ -84,7 +84,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "chatId": "<TELEGRAM_CHAT_ID>",
         "text": "=❌ Falha ao disparar Hop hot ({{ $now.setZone('America/Sao_Paulo').toFormat('HH:mm') }})\nServidor não respondeu ou retornou erro inesperado.\nVerifique: Dokploy → hop-server → Status",
         "additionalFields": { "appendAttribution": false }
       },

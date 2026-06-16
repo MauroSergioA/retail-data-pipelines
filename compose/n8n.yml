@@ -21,9 +21,6 @@ services:
       - N8N_SECURE_COOKIE=true
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
-      - HOP_URL=http://host.docker.internal:8080/run
-      - DBT_URL=http://host.docker.internal:8000/run
       - WEBHOOK_URL=https://${N8N_WEBHOOK_HOST}/
       - GENERIC_TIMEZONE=America/Sao_Paulo
       - TZ=America/Sao_Paulo
@@ -63,10 +60,6 @@ services:
       - "host.docker.internal:host-gateway"
     environment:
       - NODE_ENV=production
-      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
-      - HOP_URL=http://host.docker.internal:8080/run
-      - DBT_URL=http://host.docker.internal:8000/run
       - EXECUTIONS_MODE=queue
       - DB_TYPE=postgresdb
       - DB_POSTGRESDB_HOST=${PG_HOSTNAME}
