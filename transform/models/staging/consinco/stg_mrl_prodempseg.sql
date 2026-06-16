@@ -33,7 +33,7 @@ SELECT
     dtageracaopreco::DATE                       AS dta_geracao_preco,
     dtavalidacaopreco::DATE                     AS dta_validacao_preco,
     dtaalteracao::DATE                          AS dta_alteracao,
-    datahoraalteracao::TIMESTAMP                AS dta_hora_alteracao,
+    datahoraalteracao::TIMESTAMP                AS dta_hora_alteracao_preco,
     dtahoraltstatusvda::TIMESTAMP               AS dta_hora_alt_status_venda,
     -- preço programado (agendado para vigorar)
     precogernormalprog::NUMERIC                 AS preco_ger_programado,

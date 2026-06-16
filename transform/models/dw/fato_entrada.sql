@@ -21,7 +21,7 @@ SELECT
     empresa_id,
     dta_entrada,
     dta_emissao,
-    dias_leadtime,
+    tempo_entrega_dias,
     produto_id,
     nro_docto,
     fornecedor_id,

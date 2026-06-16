@@ -11,34 +11,34 @@ base AS (
     SELECT
         fe.fornecedor_id,
         fe.empresa_id,
-        fe.dias_leadtime,
+        fe.tempo_entrega_dias,
         fe.vlr_total_nf
     FROM {{ ref('fato_entrada') }} fe
     CROSS JOIN periodo p
     WHERE fe.cod_geral_oper IN (1, 11, 105, 107, 200, 205)
       AND fe.dta_entrada BETWEEN p.data_inicio AND p.data_fim
-      AND fe.dias_leadtime >= 0
-      AND fe.dias_leadtime <= 180
+      AND fe.tempo_entrega_dias >= 0
+      AND fe.tempo_entrega_dias <= 180
 ),
 
 agregado AS (
     SELECT
         fornecedor_id,
         empresa_id,
-        COUNT(*)                                             AS qtd_notas,
-        ROUND(AVG(dias_leadtime), 1)                        AS media_leadtime,
-        MIN(dias_leadtime)                                   AS min_leadtime,
-        MAX(dias_leadtime)                                   AS max_leadtime,
-        ROUND(STDDEV(dias_leadtime), 1)                     AS desvio_padrao_leadtime,
+        COUNT(*)                                                AS qtd_notas,
+        ROUND(AVG(tempo_entrega_dias), 1)                       AS media_tempo_entrega,
+        MIN(tempo_entrega_dias)                                 AS min_tempo_entrega,
+        MAX(tempo_entrega_dias)                                 AS max_tempo_entrega,
+        ROUND(STDDEV(tempo_entrega_dias), 1)                    AS desvio_padrao_tempo_entrega,
         PERCENTILE_CONT(0.5) WITHIN GROUP (
-            ORDER BY dias_leadtime
-        )::INTEGER                                           AS mediana_leadtime,
-        SUM(vlr_total_nf)                                    AS vlr_total_nf,
+            ORDER BY tempo_entrega_dias
+        )::INTEGER                                              AS mediana_tempo_entrega,
+        SUM(vlr_total_nf)                                       AS vlr_total_nf,
         ROUND(
-            SUM(dias_leadtime::NUMERIC * vlr_total_nf)
+            SUM(tempo_entrega_dias::NUMERIC * vlr_total_nf)
             / NULLIF(SUM(vlr_total_nf), 0),
             1
-        )                                                    AS media_leadtime_ponderado
+        )                                                       AS media_tempo_entrega_ponderado
     FROM base
     GROUP BY fornecedor_id, empresa_id
 )
@@ -47,12 +47,12 @@ SELECT
     a.fornecedor_id,
     a.empresa_id,
     a.qtd_notas,
-    a.media_leadtime,
-    a.min_leadtime,
-    a.max_leadtime,
-    a.desvio_padrao_leadtime,
-    a.mediana_leadtime,
-    a.media_leadtime_ponderado,
+    a.media_tempo_entrega,
+    a.min_tempo_entrega,
+    a.max_tempo_entrega,
+    a.desvio_padrao_tempo_entrega,
+    a.mediana_tempo_entrega,
+    a.media_tempo_entrega_ponderado,
     a.vlr_total_nf,
     f.prazo_med_entrega                                      AS prazo_cadastrado,
     f.prazo_med_atraso                                       AS atraso_cadastrado,

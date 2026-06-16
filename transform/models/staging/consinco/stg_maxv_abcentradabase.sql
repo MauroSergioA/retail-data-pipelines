@@ -6,7 +6,7 @@ SELECT
     nroempresa::INTEGER                                      AS empresa_id,
     dtaentrada::DATE                                         AS dta_entrada,
     dtaemissao::DATE                                         AS dta_emissao,
-    (dtaentrada::DATE - dtaemissao::DATE)::INTEGER           AS dias_leadtime,
+    (dtaentrada::DATE - dtaemissao::DATE)::INTEGER           AS tempo_entrega_dias,
     seqproduto::INTEGER                                      AS produto_id,
     nrodocto::BIGINT                                         AS nro_docto,
     seqfornecedor::INTEGER                                   AS fornecedor_id,

@@ -565,8 +565,8 @@
       <targetfilename>/tmp/hop-error-response.txt</targetfilename>
       <url>${HOP_WEBHOOK_ERROR_URL}</url>
       <parallel>N</parallel>
-      <xloc>832</xloc>
-      <yloc>672</yloc>
+      <xloc>848</xloc>
+      <yloc>512</yloc>
       <attributes_hac/>
     </action>
     <action>

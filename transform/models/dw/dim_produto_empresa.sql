@@ -33,8 +33,8 @@ tempo_entrega AS (
     SELECT
         fornecedor_id,
         empresa_id,
-        media_leadtime          AS tempo_entrega_medio_dias,
-        desvio_padrao_leadtime  AS tempo_entrega_desvio_padrao
+        media_tempo_entrega,
+        desvio_padrao_tempo_entrega
     FROM {{ ref('mart_tempo_entrega_fornecedor') }}
 ),
 
@@ -56,8 +56,8 @@ promoc_vigente AS (
         pi.promocao_id,
         pi.preco_promocional,
         pi.perc_desconto,
-        COALESCE(pi.dta_inicio_item, p.dta_inicio)  AS dta_inicio_promoc,
-        COALESCE(pi.dta_fim_item,    p.dta_fim)      AS dta_fim_promoc
+        COALESCE(pi.dta_inicio_item, p.dta_inicio)          AS dta_inicio_promoc,
+        COALESCE(pi.dta_fim_item,    p.dta_fim)             AS dta_fim_promoc
     FROM {{ ref('stg_mrl_promocaoitem') }}    pi
     INNER JOIN {{ ref('stg_mrl_promocao') }}  p
            ON  p.promocao_id  = pi.promocao_id
@@ -81,8 +81,8 @@ SELECT
     fp.fornecedor_principal_id,
     fue.fornecedor_ultima_entrada_id,
     -- tempo de entrega (do fornecedor da última entrada — snapshot mensal)
-    te.tempo_entrega_medio_dias,
-    te.tempo_entrega_desvio_padrao,
+    te.media_tempo_entrega,
+    te.desvio_padrao_tempo_entrega,
     -- curva abc (snapshot mensal)
     abc.curva_abc_valor_empresa,
     abc.curva_abc_valor_categoria,
@@ -95,10 +95,10 @@ SELECT
     CASE 
         WHEN pv.promocao_id IS NULL THEN 'NÃO'
         ELSE 'SIM'
-    END                             AS ind_em_promoc,
-    pv.promocao_id                  AS promocao_vigente_id,
-    pv.preco_promocional            AS preco_promoc_vigente,
-    pv.perc_desconto                AS perc_desconto_promoc,
+    END                                                 AS ind_em_promoc,
+    pv.promocao_id                                      AS promocao_vigente_id,
+    pv.preco_promocional                                AS preco_promoc_vigente,
+    pv.perc_desconto                                    AS perc_desconto_promoc,
     pv.dta_inicio_promoc,
     pv.dta_fim_promoc,
     (pv.dta_fim_promoc - CURRENT_DATE)::INTEGER         AS dias_restantes_promoc,
