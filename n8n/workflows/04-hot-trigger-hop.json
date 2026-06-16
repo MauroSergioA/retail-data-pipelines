@@ -21,7 +21,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.HOP_URL }}?workflow=workflow_consinco_vendas_hot",
+        "url": "http://host.docker.internal:8080/run?workflow=workflow_consinco_vendas_hot",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "options": {

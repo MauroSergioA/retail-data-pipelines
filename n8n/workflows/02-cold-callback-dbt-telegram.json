@@ -23,7 +23,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.DBT_URL }}",
+        "url": "http://host.docker.internal:8000/run",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "options": { "timeout": 1800000 }

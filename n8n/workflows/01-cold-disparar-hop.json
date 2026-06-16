@@ -16,7 +16,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.HOP_URL }}",
+        "url": "http://host.docker.internal:8080/run",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "options": {
