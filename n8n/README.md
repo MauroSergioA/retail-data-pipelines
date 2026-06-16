@@ -11,10 +11,10 @@ Exportação dos 6 workflows de orquestração para recuperação de desastres e
 
 | Arquivo | Trigger | Função |
 |---|---|---|
-| `01-cold-disparar-hop.json` | Cron 01:00 | Dispara Hop cold (workflow_consinco.hwf) |
+| `01-cold-disparar-hop.json` | Cron 01:00 | Dispara Hop cold (workflow_consinco_cold.hwf) |
 | `02-cold-callback-dbt-telegram.json` | Webhook `hop-finished` | Roda dbt após Hop cold → Telegram |
 | `03-cold-erro.json` | Webhook `hop-error` | Notifica erro do Hop cold → Telegram |
-| `04-hot-trigger-hop.json` | Cron 08h/12h/15h/18h | Dispara Hop hot (workflow_consinco_vendas_hot) |
+| `04-hot-trigger-hop.json` | Cron 08h/12h/15h/18h | Dispara Hop hot (workflow_consinco_hot) |
 | `05-hot-callback-dbt-telegram.json` | Webhook `vendas-hot` | Roda dbt após Hop hot → Telegram |
 | `06-mensal-curva-abc-tempo-entrega.json` | Cron dia 1, 02:00 | Curva ABC + Tempo Entrega → Telegram |
 

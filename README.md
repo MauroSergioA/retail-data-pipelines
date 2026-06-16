@@ -188,8 +188,8 @@ retail-data-pipelines/
 ├── .env.example            # Variáveis necessárias (sem valores reais)
 ├── consinco/               # Pipelines Hop (.hpl) — uma por tabela Oracle
 ├── workflows/
-│   ├── workflow_consinco.hwf             # Workflow cold (~20 tabelas Oracle → bronze)
-│   └── workflow_consinco_vendas_hot.hwf  # Workflow hot (vendas + entradas, 4×/dia)
+│   ├── workflow_consinco_cold.hwf         # Workflow cold (~20 tabelas Oracle → bronze)
+│   └── workflow_consinco_hot.hwf         # Workflow hot (vendas + entradas, 4×/dia)
 ├── metadata/
 │   └── rdbms/              # Conexões Hop (postgresql-server, oracle-consinco)
 ├── transform/              # Projeto dbt completo
@@ -240,7 +240,7 @@ Chamadas `POST /run` requerem o header `X-Api-Key: <TRIGGER_API_KEY>`. O endpoin
 
 | Endpoint | Método | Descrição |
 | --- | --- | --- |
-| `/run` | POST | Inicia `workflow_consinco.hwf` em background. Retorna `{"status":"started"}` imediatamente. Retorna 409 se já estiver rodando. |
+| `/run` | POST | Inicia `workflow_consinco_cold.hwf` em background. Retorna `{"status":"started"}` imediatamente. Retorna 409 se já estiver rodando. |
 | `/health` | GET | `{"status":"idle"}` ou `{"status":"running"}` |
 
 ### dbt-server.py — porta 8000
