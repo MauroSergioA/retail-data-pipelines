@@ -1,0 +1,62 @@
+{
+  "name": "03 · Cold — Erro",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "hop-error",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-480, -16],
+      "id": "5c6c5322-07f4-4987-a107-83ab0d87a282",
+      "name": "Receber Erro Hop",
+      "webhookId": "fc5be2d4-475d-49fb-bd70-37ed9ede3815"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "72592ba7-28e0-42d2-9fc8-5b46d6d956e2",
+              "name": "telegram_chat_id",
+              "value": "<TELEGRAM_CHAT_ID>",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-208, -16],
+      "id": "fea6a8f6-5d93-4315-a71c-e7b86a894232",
+      "name": "Configurações"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.telegram_chat_id }}",
+        "text": "=⚠️ ERRO — Pipeline Cold\n\nUm pipeline falhou durante a extração noturna.\nVerifique os logs no Dokploy → hop-server.",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [96, -16],
+      "id": "93e080bc-ca87-4c43-ac11-aa2deb385446",
+      "name": "Telegram - Erro Pipeline Cold"
+    }
+  ],
+  "connections": {
+    "Receber Erro Hop": {
+      "main": [[{ "node": "Configurações", "type": "main", "index": 0 }]]
+    },
+    "Configurações": {
+      "main": [[{ "node": "Telegram - Erro Pipeline Cold", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}

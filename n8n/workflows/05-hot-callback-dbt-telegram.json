@@ -1,0 +1,140 @@
+{
+  "name": "05 · Hot — Callback dbt → Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "vendas-hot",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-896, 0],
+      "id": "7959030b-b0ee-4616-bbf8-324ff99aed78",
+      "name": "Hop Concluído",
+      "webhookId": "35f03172-d14f-4940-b76a-0191a35f79ed"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "72592ba7-28e0-42d2-9fc8-5b46d6d956e2",
+              "name": "telegram_chat_id",
+              "value": "<TELEGRAM_CHAT_ID>",
+              "type": "string"
+            },
+            {
+              "id": "61026e6b-53fb-4a6d-bd56-6350e2507510",
+              "name": "dbt_runner_url",
+              "value": "http://host.docker.internal:8000/run",
+              "type": "string"
+            },
+            {
+              "id": "edf5cacc-e74d-4db7-9a29-7b69fbec8e31",
+              "name": "modelos",
+              "value": "=stg_maxv_abcdistribbase\nfato_venda\nstg_maxv_abcentradabase\nfato_entrada",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-624, 0],
+      "id": "dc8305f1-3dc1-41da-a9b3-fcea325d12e8",
+      "name": "Configurações"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.dbt_runner_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "={{ $json.modelos.split('\\n').filter(m => m.trim()).join(' ') }}"
+            }
+          ]
+        },
+        "options": { "timeout": 1800000 }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [-288, 0],
+      "id": "9da92c26-5fab-43ec-8f7c-d17180c69293",
+      "name": "dbt - Vendas Hot"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [
+            {
+              "id": "1761e5c6-1158-4393-a5d7-c72f401c9f3f",
+              "leftValue": "={{ $json.returncode }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [48, 0],
+      "id": "9228a28a-d011-4392-b2fa-36e0e5450d9b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Configurações').item.json.telegram_chat_id }}",
+        "text": "=✅ Vendas Hot atualizada\n🕐 {{ new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) }}",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [576, -208],
+      "id": "92582863-4eed-434a-b846-c2058e3a232b",
+      "name": "Notificar Sucesso"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Configurações').item.json.telegram_chat_id }}",
+        "text": "=❌ Vendas Hot falhou\n🔍 {{ $json.stderr || $json.stdout.slice(-500) }}",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [592, 176],
+      "id": "3c8ef25c-4432-44a6-9e10-46027ecd9cdf",
+      "name": "Notificar Erro"
+    }
+  ],
+  "connections": {
+    "Hop Concluído": {
+      "main": [[{ "node": "Configurações", "type": "main", "index": 0 }]]
+    },
+    "Configurações": {
+      "main": [[{ "node": "dbt - Vendas Hot", "type": "main", "index": 0 }]]
+    },
+    "dbt - Vendas Hot": {
+      "main": [[{ "node": "If", "type": "main", "index": 0 }]]
+    },
+    "If": {
+      "main": [
+        [{ "node": "Notificar Sucesso", "type": "main", "index": 0 }],
+        [{ "node": "Notificar Erro", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}

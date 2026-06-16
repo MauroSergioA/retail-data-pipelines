@@ -1,0 +1,125 @@
+{
+  "name": "02 · Cold — Callback dbt → Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "hop-finished",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-384, -16],
+      "id": "7c08f15b-499b-45eb-a20e-3dfc9c1a5278",
+      "name": "Receber Sinal do Hop",
+      "webhookId": "1781f52a-b32f-4e9e-9c3d-177b2a1bfb26"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "72592ba7-28e0-42d2-9fc8-5b46d6d956e2",
+              "name": "telegram_chat_id",
+              "value": "<TELEGRAM_CHAT_ID>",
+              "type": "string"
+            },
+            {
+              "id": "61026e6b-53fb-4a6d-bd56-6350e2507510",
+              "name": "dbt_runner_url",
+              "value": "http://host.docker.internal:8000/run",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-96, -16],
+      "id": "e92f2afe-51a8-47ea-b6bb-1c673eb90e49",
+      "name": "Configurações"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.dbt_runner_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": { "timeout": 1800000 }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [160, -16],
+      "id": "68dda058-c13b-467d-bd6f-a3bf00c7ca11",
+      "name": "Executar dbt"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [
+            {
+              "id": "3b74646a-b2fa-4731-8b4b-b9515f3f4873",
+              "leftValue": "={{ $json.returncode }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [416, -16],
+      "id": "bd52eb6d-883c-4712-99b4-e14fee612d7a",
+      "name": "dbt Sucesso?"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Configurações').item.json.telegram_chat_id }}",
+        "text": "=✅ Pipeline concluído com sucesso!\n\n📅 {{ $now.setZone('America/Sao_Paulo').toFormat('dd/MM/yyyy HH:mm') }}\n⏱ Tempo dbt: {{ $('Executar dbt').item.json.stdout.match(/\\((\\d+(?:\\.\\d+)?)s\\)/)?.[1] ?? '?' }}s\n📦 Modelos: {{ $('Executar dbt').item.json.stdout.match(/TOTAL=(\\d+)/)?.[1] ?? '?' }} total\n✅ Sucesso: {{ $('Executar dbt').item.json.stdout.match(/PASS=(\\d+)/)?.[1] ?? '?' }}\n⚠️ Avisos: {{ $('Executar dbt').item.json.stdout.match(/WARN=(\\d+)/)?.[1] ?? '0' }}\n❌ Erros: {{ $('Executar dbt').item.json.stdout.match(/ERROR=(\\d+)/)?.[1] ?? '0' }}\n⏭ Ignorados: {{ $('Executar dbt').item.json.stdout.match(/SKIP=(\\d+)/)?.[1] ?? '0' }}",
+        "additionalFields": { "appendAttribution": false, "parse_mode": "HTML" }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [736, -192],
+      "id": "790f8492-79c7-489e-8b71-85536937780f",
+      "name": "Notificar Sucesso"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Configurações').item.json.telegram_chat_id }}",
+        "text": "=❌ Pipeline falhou na etapa dbt!\n\n📅 {{ $now.setZone('America/Sao_Paulo').toFormat('dd/MM/yyyy HH:mm') }}\n🔴 Return code: {{ $('Executar dbt').item.json.returncode }}\n📦 Total: {{ $('Executar dbt').item.json.stdout.match(/TOTAL=(\\d+)/)?.[1] ?? '?' }} modelos\n✅ Sucesso: {{ $('Executar dbt').item.json.stdout.match(/PASS=(\\d+)/)?.[1] ?? '0' }}\n❌ Erros: {{ $('Executar dbt').item.json.stdout.match(/ERROR=(\\d+)/)?.[1] ?? '?' }}\n⏭ Ignorados: {{ $('Executar dbt').item.json.stdout.match(/SKIP=(\\d+)/)?.[1] ?? '0' }}",
+        "additionalFields": { "appendAttribution": false, "parse_mode": "HTML" }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [736, 176],
+      "id": "78ee3a61-1f55-4000-8ac7-5ed404727525",
+      "name": "Notificar Falha"
+    }
+  ],
+  "connections": {
+    "Receber Sinal do Hop": {
+      "main": [[{ "node": "Configurações", "type": "main", "index": 0 }]]
+    },
+    "Configurações": {
+      "main": [[{ "node": "Executar dbt", "type": "main", "index": 0 }]]
+    },
+    "Executar dbt": {
+      "main": [[{ "node": "dbt Sucesso?", "type": "main", "index": 0 }]]
+    },
+    "dbt Sucesso?": {
+      "main": [
+        [{ "node": "Notificar Sucesso", "type": "main", "index": 0 }],
+        [{ "node": "Notificar Falha", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}

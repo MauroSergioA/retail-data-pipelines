@@ -1,0 +1,140 @@
+{
+  "name": "06 · Mensal — Curva ABC + Tempo Entrega",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "months", "triggerAtHour": 2 }]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [-448, -16],
+      "id": "89057e57-fe51-4f00-a8e3-520d0f106026",
+      "name": "Dia 1 do Mês"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "72592ba7-28e0-42d2-9fc8-5b46d6d956e2",
+              "name": "telegram_chat_id",
+              "value": "<TELEGRAM_CHAT_ID>",
+              "type": "string"
+            },
+            {
+              "id": "61026e6b-53fb-4a6d-bd56-6350e2507510",
+              "name": "dbt_runner_url",
+              "value": "http://host.docker.internal:8000/run",
+              "type": "string"
+            },
+            {
+              "id": "ee69d26c-083c-478f-9982-832a68f69f3f",
+              "name": "modelos",
+              "value": "=mart_curva_abc\nmart_tempo_entrega_fornecedor",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-160, -16],
+      "id": "e55a35e9-d418-4691-acc2-33671ed454d3",
+      "name": "Configurações"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.dbt_runner_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "={{ $json.modelos.split('\\n').filter(m => m.trim()).join(' ') }}"
+            }
+          ]
+        },
+        "options": { "timeout": 1800000 }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [96, -16],
+      "id": "4dcc154b-ac02-4998-a905-7c8d6b5caa5e",
+      "name": "dbt - Curva ABC"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [
+            {
+              "id": "601f0037-3681-450d-81e3-39e95d7f88d2",
+              "leftValue": "={{ $json.returncode }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [352, -16],
+      "id": "bf6a0c92-9097-461b-8e58-7d43c5d79fad",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Configurações').item.json.telegram_chat_id }}",
+        "text": "=✅ Curva ABC Mensal recalculada\n📦 {{ $json.stdout.match(/SELECT (\\d+)/)?.[1] }} linhas\n⏱ {{ new Date().toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'}) }}",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [736, -176],
+      "id": "577ae2a9-17fc-4d9c-8087-ee7d1e738a9b",
+      "name": "Notificar Sucesso"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Configurações').item.json.telegram_chat_id }}",
+        "text": "=❌ Curva ABC Mensal falhou\n🔍 {{ $json.stderr || $json.stdout.slice(-500) }}",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [752, 160],
+      "id": "c6c02484-18e6-4bbb-b5a4-6ac6c173deb8",
+      "name": "Notificar Erro"
+    }
+  ],
+  "connections": {
+    "Dia 1 do Mês": {
+      "main": [[{ "node": "Configurações", "type": "main", "index": 0 }]]
+    },
+    "Configurações": {
+      "main": [[{ "node": "dbt - Curva ABC", "type": "main", "index": 0 }]]
+    },
+    "dbt - Curva ABC": {
+      "main": [[{ "node": "If", "type": "main", "index": 0 }]]
+    },
+    "If": {
+      "main": [
+        [{ "node": "Notificar Sucesso", "type": "main", "index": 0 }],
+        [{ "node": "Notificar Erro", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}
