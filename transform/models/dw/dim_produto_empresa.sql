@@ -101,6 +101,13 @@ SELECT
     pv.perc_desconto                AS perc_desconto_promoc,
     pv.dta_inicio_promoc,
     pv.dta_fim_promoc,
+    (pv.dta_fim_promoc - CURRENT_DATE)::INTEGER         AS dias_restantes_promoc,
+    (pr.preco_valido_normal - pv.preco_promocional)     AS desconto_absoluto,
+    CASE
+        WHEN pv.promocao_id IS NOT NULL
+         AND (pv.dta_fim_promoc - CURRENT_DATE) <= 3 THEN 'SIM'
+        ELSE 'NÃO'
+    END                                                 AS ind_promoc_encerrando_3dias,
     -- locais de estoque
     pe.local_entrada_id,
     pe.local_saida_id,
@@ -131,7 +138,7 @@ SELECT
     pr.motivo_preco_valido,
     pr.dta_geracao_preco,
     pr.dta_validacao_preco,
-    pr.dta_hora_alteracao           AS dta_hora_alteracao_preco,
+    pr.dta_hora_alteracao_preco,
     pr.dta_hora_alt_status_venda,
     pr.preco_ger_programado,
     pr.dta_preco_programado,
