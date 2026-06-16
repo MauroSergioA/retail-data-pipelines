@@ -187,17 +187,28 @@ retail-data-pipelines/
 ├── Dockerfile.dbt          # dbt runner (Python 3.12-slim)
 ├── .env.example            # Variáveis necessárias (sem valores reais)
 ├── consinco/               # Pipelines Hop (.hpl) — uma por tabela Oracle
+│   └── historico/          # Pipelines de carga histórica (abcdistribbase, abcentradabase)
 ├── workflows/
-│   ├── workflow_consinco_cold.hwf         # Workflow cold (~20 tabelas Oracle → bronze)
-│   └── workflow_consinco_hot.hwf         # Workflow hot (vendas + entradas, 4×/dia)
+│   ├── workflow_consinco_cold.hwf   # Workflow cold (~20 tabelas Oracle → bronze)
+│   └── workflow_consinco_hot.hwf    # Workflow hot (vendas + entradas, 4×/dia)
 ├── metadata/
 │   └── rdbms/              # Conexões Hop (postgresql-server, oracle-consinco)
+├── n8n/
+│   ├── README.md           # Como restaurar os workflows do zero
+│   └── workflows/          # JSONs exportados dos 6 workflows (disaster recovery)
 ├── transform/              # Projeto dbt completo
 │   ├── dbt_project.yml
 │   ├── macros/
 │   └── models/
 │       ├── staging/consinco/   # stg_* — silver layer
 │       └── dw/                 # dim_*, fato_*, mart_* — gold layer
+├── docs/
+│   ├── arquitetura/        # Visão geral, convenções, estratégia incremental
+│   ├── dw/                 # Documentação dos modelos gold (dim_*, fato_*, mart_*)
+│   ├── fontes/             # Tabelas Oracle extraídas (consinco/*.md)
+│   ├── guias/              # Carga histórica, rodar dbt, novo pipeline Hop
+│   ├── negocio/            # Contexto da rede de varejo
+│   └── operacao/           # Orquestração, disaster recovery, segurança
 ├── scripts/
 │   ├── docker-entrypoint.sh    # Wrapper root: injeta host.docker.internal, exec como hop
 │   ├── hop-entrypoint.sh       # Registra projeto/env no Hop + inicia trigger server
