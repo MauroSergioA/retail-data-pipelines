@@ -539,8 +539,8 @@
       <file_appended>N</file_appended>
       <headers>
         <header>
-          <name>X-Api-Key</name>
-          <value>${TRIGGER_API_KEY}</value>
+          <header_name>X-Api-Key</header_name>
+          <header_value>${TRIGGER_API_KEY}</header_value>
         </header>
 </headers>
       <ignore_ssl>N</ignore_ssl>
@@ -563,8 +563,8 @@
       <file_appended>N</file_appended>
       <headers>
         <header>
-          <name>X-Api-Key</name>
-          <value>${TRIGGER_API_KEY}</value>
+          <header_name>X-Api-Key</header_name>
+          <header_value>${TRIGGER_API_KEY}</header_value>
         </header>
 </headers>
       <ignore_ssl>N</ignore_ssl>
