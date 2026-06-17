@@ -19,7 +19,9 @@ printf '{
     { "name" : "CONSINCO_PASSWORD",   "value" : "%s", "description" : "" },
     { "name" : "CONSINCO_URL",             "value" : "%s", "description" : "" },
     { "name" : "HOP_WEBHOOK_FINISHED_URL", "value" : "%s", "description" : "" },
-    { "name" : "HOP_HOT_WEBHOOK_URL",     "value" : "%s", "description" : "" }
+    { "name" : "HOP_HOT_WEBHOOK_URL",     "value" : "%s", "description" : "" },
+    { "name" : "HOP_WEBHOOK_ERROR_URL",   "value" : "%s", "description" : "" },
+    { "name" : "TRIGGER_API_KEY",         "value" : "%s", "description" : "" }
   ]
 }' \
   "${PG_HOSTNAME:-}"                 \
@@ -36,6 +38,8 @@ printf '{
   "${CONSINCO_URL:-}"                \
   "${HOP_WEBHOOK_FINISHED_URL:-}"    \
   "${HOP_HOT_WEBHOOK_URL:-}"         \
+  "${HOP_WEBHOOK_ERROR_URL:-}"       \
+  "${TRIGGER_API_KEY:-}"             \
   > "$ENVFILE"
 
 export HOP_ENVIRONMENT_CONFIG_FILE_NAME_PATHS="$ENVFILE"

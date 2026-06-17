@@ -757,6 +757,13 @@
       <unconditional>N</unconditional>
     </hop>
     <hop>
+      <from>Notificar n8n</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
       <from>max_empresa.hpl</from>
       <to>Notificar Erro</to>
       <enabled>Y</enabled>
