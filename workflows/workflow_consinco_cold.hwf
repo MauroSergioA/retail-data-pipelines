@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workflow>
-  <name>workflow_consinco</name>
+  <name>workflow_consinco_cold</name>
   <name_sync_with_filename>Y</name_sync_with_filename>
   <description/>
   <extended_description/>
@@ -469,7 +469,7 @@
       <set_logfile>N</set_logfile>
       <wait_until_finished>Y</wait_until_finished>
       <parallel>N</parallel>
-      <xloc>480</xloc>
+      <xloc>384</xloc>
       <yloc>240</yloc>
       <attributes_hac/>
     </action>
@@ -495,7 +495,7 @@
       <set_logfile>N</set_logfile>
       <wait_until_finished>Y</wait_until_finished>
       <parallel>N</parallel>
-      <xloc>400</xloc>
+      <xloc>240</xloc>
       <yloc>240</yloc>
       <attributes_hac/>
     </action>
@@ -521,7 +521,7 @@
       <set_logfile>N</set_logfile>
       <wait_until_finished>Y</wait_until_finished>
       <parallel>N</parallel>
-      <xloc>240</xloc>
+      <xloc>96</xloc>
       <yloc>240</yloc>
       <attributes_hac/>
     </action>
@@ -551,8 +551,8 @@
       <set_logfile>N</set_logfile>
       <wait_until_finished>Y</wait_until_finished>
       <parallel>N</parallel>
-      <xloc>160</xloc>
-      <yloc>312</yloc>
+      <xloc>96</xloc>
+      <yloc>384</yloc>
       <attributes_hac/>
     </action>
     <action>
@@ -581,8 +581,8 @@
       <set_logfile>N</set_logfile>
       <wait_until_finished>Y</wait_until_finished>
       <parallel>N</parallel>
-      <xloc>128</xloc>
-      <yloc>348</yloc>
+      <xloc>240</xloc>
+      <yloc>384</yloc>
       <attributes_hac/>
     </action>
     <action>
@@ -611,7 +611,7 @@
       <set_logfile>N</set_logfile>
       <wait_until_finished>Y</wait_until_finished>
       <parallel>N</parallel>
-      <xloc>96</xloc>
+      <xloc>560</xloc>
       <yloc>384</yloc>
       <attributes_hac/>
     </action>
@@ -628,7 +628,7 @@
           <header_name>X-Api-Key</header_name>
           <header_value>${TRIGGER_API_KEY}</header_value>
         </header>
-</headers>
+      </headers>
       <ignore_ssl>N</ignore_ssl>
       <password>Encrypted </password>
       <run_every_row>N</run_every_row>
@@ -652,7 +652,7 @@
           <header_name>X-Api-Key</header_name>
           <header_value>${TRIGGER_API_KEY}</header_value>
         </header>
-</headers>
+      </headers>
       <ignore_ssl>N</ignore_ssl>
       <password>Encrypted </password>
       <run_every_row>N</run_every_row>
@@ -689,8 +689,8 @@
       <set_logfile>N</set_logfile>
       <wait_until_finished>Y</wait_until_finished>
       <parallel>N</parallel>
-      <xloc>96</xloc>
-      <yloc>240</yloc>
+      <xloc>384</xloc>
+      <yloc>384</yloc>
       <attributes_hac/>
     </action>
   </actions>
