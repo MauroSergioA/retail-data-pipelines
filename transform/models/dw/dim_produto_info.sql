@@ -1,3 +1,9 @@
+{{ config(
+    indexes=[
+      {'columns': ['produto_id'], 'unique': True}
+    ]
+) }}
+
 WITH produto AS (
     SELECT
         *

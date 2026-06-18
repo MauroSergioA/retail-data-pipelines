@@ -6,7 +6,12 @@
         'produto_id', 'operador_id'
     ],
     on_schema_change='append_new_columns',
-    incremental_strategy='delete+insert'
+    incremental_strategy='delete+insert',
+    indexes=[
+      {'columns': ['data_venda'], 'type': 'btree'},
+      {'columns': ['empresa_id'], 'type': 'btree'},
+      {'columns': ['produto_id'], 'type': 'btree'}
+    ]
 ) }}
 
 WITH stg AS (
