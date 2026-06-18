@@ -1,3 +1,11 @@
+{{ config(
+    indexes=[
+      {'columns': ['produto_id', 'empresa_id'], 'unique': True},
+      {'columns': ['produto_id'], 'type': 'btree'},
+      {'columns': ['empresa_id'], 'type': 'btree'}
+    ]
+) }}
+
 WITH pe AS (
     SELECT * FROM {{ ref('stg_mrl_produtoempresa') }}
 ),

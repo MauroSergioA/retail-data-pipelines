@@ -2,7 +2,13 @@
     materialized='incremental',
     unique_key=['dta_movimento', 'empresa_id', 'produto_id'],
     on_schema_change='append_new_columns',
-    incremental_strategy='delete+insert'
+    incremental_strategy='delete+insert',
+    indexes=[
+      {'columns': ['dta_movimento', 'empresa_id', 'produto_id'], 'unique': True},
+      {'columns': ['dta_movimento'], 'type': 'btree'},
+      {'columns': ['empresa_id'], 'type': 'btree'},
+      {'columns': ['produto_id'], 'type': 'btree'}
+    ]
 ) }}
 
 WITH stg AS (
