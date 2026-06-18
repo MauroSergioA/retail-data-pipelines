@@ -1,0 +1,21 @@
+version: 2
+
+sources:
+  - name: enriquecimento
+    description: >
+      Dados complementares obtidos via APIs públicas (Minha Receita / BrasilAPI),
+      carregados no schema bronze por scripts/cnpj_enriquecimento.py — não fazem
+      parte da extração do Consinco via Hop. dbt consome como fonte e transforma
+      normalmente.
+    schema: bronze
+    tables:
+      - name: cnpj_dados_receita
+        description: >
+          Situação cadastral, regime tributário (Simples/MEI) e dados cadastrais
+          (porte, capital social, CNAE, data de início de atividade) por CNPJ.
+          Uma linha por CNPJ, atualizada via upsert pelo script de enriquecimento.
+        columns:
+          - name: cnpj
+            description: CNPJ (14 dígitos, sem formatação) — chave primária.
+          - name: _loaded_at
+            description: Timestamp da última atualização do registro.

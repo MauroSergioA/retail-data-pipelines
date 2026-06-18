@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: stg_cnpj_dados_receita
+    description: >
+      Staging de bronze.cnpj_dados_receita. Cast de datas, sem humanização de
+      valores (feita na camada dw, conforme convenção do projeto).
+    columns:
+      - name: cnpj
+        description: CNPJ (14 dígitos) — chave primária.
+        data_tests:
+          - not_null
+          - unique
+      - name: carregado_em
+        description: Timestamp da última atualização do registro pelo script de enriquecimento.
+        data_tests:
+          - not_null

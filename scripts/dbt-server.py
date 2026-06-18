@@ -27,7 +27,23 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         if not self._check_auth():
             return
-        if self.path.startswith("/run"):
+        if self.path.startswith("/run-cnpj"):
+            mode = "incremental"
+            if "?" in self.path:
+                qs = self.path.split("?", 1)[1]
+                for part in qs.split("&"):
+                    if part.startswith("mode="):
+                        mode = unquote(part[5:])
+            cmd = ["python3", "/usr/local/bin/cnpj_enriquecimento.py"]
+            if mode == "full":
+                cmd.append("--full")
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            self._respond(200, {
+                "returncode": result.returncode,
+                "stdout": result.stdout[-4000:],
+                "stderr": result.stderr[-2000:],
+            })
+        elif self.path.startswith("/run"):
             select = None
             if "?" in self.path:
                 qs = self.path.split("?", 1)[1]
