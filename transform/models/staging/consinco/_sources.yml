@@ -649,3 +649,82 @@ sources:
             description: Venda promocional calculada pela função Oracle FC5_AbcDistribVendaPromoc.
           - name: _loaded_at
             description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
+      # Estoque
+      # -------------------------------------------------------------------------
+      - name: mrl_lanctoestoque
+        description: >
+          Lançamentos individuais de movimentação de estoque (entrada/saída), filtrados por
+          gerar_alteracao_estoque = 'S' ou NULL. Janela de WINDOW_DAYS dias (cold) — bronze
+          truncado e recarregado a cada execução, histórico acumulado fica no gold.
+        columns:
+          - name: seqmovtoestq
+            description: Chave do lançamento individual de estoque.
+          - name: nroempresa
+            description: Código da loja.
+          - name: dtaentradasaida
+            description: Data da movimentação.
+          - name: dtahorlancto
+            description: Timestamp exato do lançamento.
+          - name: seqproduto
+            description: Código sequencial do produto.
+          - name: local
+            description: Código do local (FK para mrl_local.seqlocal).
+          - name: codgeraloper
+            description: Código geral da operação que originou a movimentação.
+          - name: tiplancto
+            description: "Tipo de lançamento: E = entrada, S = saída."
+          - name: qtdlancto
+            description: Quantidade lançada (sem sinal — sinal aplicado no gold).
+          - name: valorvlrnf
+            description: Valor de NF daquele lançamento específico (granularidade do movimento, não média diária).
+          - name: motivomovto
+            description: Motivo da movimentação (perda, ajuste, transferência, etc.).
+          - name: historico
+            description: Texto livre descrevendo a movimentação (útil para lançamentos manuais).
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: mrl_custodia
+        description: >
+          Snapshot diário de saldo e custo de estoque por produto/empresa. Inclui saldo de
+          abertura do dia (qtdestqinicial) — fonte oficial de saldo, não calculado por soma
+          acumulada de lançamentos. Janela de WINDOW_DAYS dias (cold).
+        columns:
+          - name: seqproduto
+            description: Código sequencial do produto.
+          - name: dtaentradasaida
+            description: Data do snapshot.
+          - name: nroempresa
+            description: Código da loja.
+          - name: qtdestqinicial
+            description: Saldo de estoque no início do dia — fonte oficial, calculada pelo Consinco.
+          - name: qtdentrada
+            description: Quantidade total de entrada no dia.
+          - name: qtdsaida
+            description: Quantidade total de saída no dia.
+          - name: qtdcompra
+            description: Quantidade comprada no dia.
+          - name: vlrtotalcompra
+            description: Valor total comprado no dia.
+          - name: qtdvda
+            description: Quantidade vendida no dia.
+          - name: vlrtotalvda
+            description: Valor total vendido no dia.
+          - name: vlrcusliquidovda
+            description: Custo líquido da venda do dia.
+          - name: vlrcusbrutovda
+            description: Custo bruto da venda do dia.
+          - name: qtddevol
+            description: Quantidade devolvida no dia.
+          - name: vlrtotaldevol
+            description: Valor total devolvido no dia.
+          - name: vlrcusliquidodevol
+            description: Custo líquido da devolução do dia.
+          - name: cmdiavlrnf
+            description: Custo médio diário — valor de NF.
+          - name: cmdiacusliquidoemp
+            description: Custo médio diário — custo líquido empresa.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.

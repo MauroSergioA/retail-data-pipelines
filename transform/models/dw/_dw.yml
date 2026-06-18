@@ -672,3 +672,93 @@ models:
         description: Timestamp da última atualização do registro pelo script de enriquecimento.
         data_tests:
           - not_null
+
+  - name: fato_estoque_movimento
+    description: >
+      Fato incremental no grão atômico do lançamento de estoque (uma linha por
+      movimento_id). qtd_movimento e vlr_nf_movimento já vêm com sinal aplicado
+      (E=+1/S=-1). Complementar a fato_estoque_saldo_diario: responde onde
+      (local/depósito) e por que (motivo/operação) o estoque se moveu.
+    columns:
+      - name: movimento_id
+        description: Chave primária — SEQMOVTOESTQ de origem.
+        data_tests:
+          - not_null
+          - unique
+      - name: empresa_id
+        description: Código da loja.
+        data_tests:
+          - not_null
+      - name: dta_movimento
+        description: Data da movimentação.
+        data_tests:
+          - not_null
+      - name: produto_id
+        description: Código sequencial do produto.
+        data_tests:
+          - not_null
+      - name: produto_base_id
+        description: Produto-base do lançamento (kits/composições), quando aplicável.
+      - name: local_id
+        description: Código do local (depósito/loja/câmara fria).
+      - name: descricao_local
+        description: Descrição do local — via join com stg_mrl_local.
+      - name: tipo_local
+        description: Tipo do local.
+      - name: status_local
+        description: Status do local.
+      - name: cod_geral_oper
+        description: Código geral da operação que originou a movimentação.
+      - name: tip_uso_cgo
+        description: Tipo de uso do código geral de operação.
+      - name: tip_lancto
+        description: "Tipo de lançamento bruto: E = entrada, S = saída."
+      - name: qtd_lancto
+        description: Quantidade já com sinal aplicado (E=+1/S=-1) — calculado em stg_mrl_lanctoestoque.
+      - name: vlr_nf_lancto
+        description: Valor de NF do lançamento, já com sinal aplicado.
+      - name: lote_estoque_id
+        description: Lote de estoque, quando aplicável (perecíveis/validade).
+      - name: nro_documento
+        description: Número do documento que originou a movimentação.
+      - name: motivo_movto
+        description: Motivo da movimentação (perda, ajuste, transferência, etc.).
+      - name: historico
+        description: Texto livre da movimentação — útil pra investigar lançamentos manuais.
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  - name: fato_estoque_saldo_diario
+    description: >
+      Fato incremental no grão diário por produto/empresa (fonte: MRL_CUSTODIA).
+      qtd_estoque_inicial é o saldo oficial calculado pelo Consinco — não é derivado
+      por soma acumulada de movimentações, evitando drift de cálculo ao longo do tempo.
+      Complementar a fato_estoque_movimento: responde quanto havia em estoque em
+      cada dia.
+    columns:
+      - name: dta_movimento
+        description: Data do snapshot de saldo.
+        data_tests:
+          - not_null
+      - name: empresa_id
+        description: Código da loja.
+        data_tests:
+          - not_null
+      - name: produto_id
+        description: Código sequencial do produto.
+        data_tests:
+          - not_null
+      - name: qtd_estoque_inicial
+        description: Saldo de estoque no início do dia — fonte oficial (Consinco).
+      - name: qtd_estoque_final
+        description: Saldo calculado de fechamento — qtd_estoque_inicial + qtd_entrada - qtd_saida.
+      - name: custo_medio_dia_nf
+        description: Custo médio diário — valor de NF.
+      - name: custo_medio_dia_liquido
+        description: Custo médio diário — custo líquido empresa.
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null

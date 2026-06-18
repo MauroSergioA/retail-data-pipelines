@@ -448,6 +448,32 @@
       <attributes_hac/>
     </action>
     <action>
+      <name>mrl_local.hpl</name>
+      <description/>
+      <type>PIPELINE</type>
+      <attributes/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <clear_files>N</clear_files>
+      <clear_rows>N</clear_rows>
+      <create_parent_folder>N</create_parent_folder>
+      <exec_per_row>N</exec_per_row>
+      <filename>${PROJECT_HOME}/consinco/mrl_local.hpl</filename>
+      <loglevel>Basic</loglevel>
+      <parameters>
+        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>
+      <params_from_previous>N</params_from_previous>
+      <run_configuration>local</run_configuration>
+      <set_append_logfile>N</set_append_logfile>
+      <set_logfile>N</set_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <parallel>N</parallel>
+      <xloc>480</xloc>
+      <yloc>240</yloc>
+      <attributes_hac/>
+    </action>
+    <action>
       <name>mrl_promocao.hpl</name>
       <description/>
       <type>PIPELINE</type>
@@ -497,6 +523,66 @@
       <parallel>N</parallel>
       <xloc>240</xloc>
       <yloc>240</yloc>
+      <attributes_hac/>
+    </action>
+    <action>
+      <name>mrl_lanctoestoque.hpl</name>
+      <description/>
+      <type>PIPELINE</type>
+      <attributes/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <clear_files>N</clear_files>
+      <clear_rows>N</clear_rows>
+      <create_parent_folder>N</create_parent_folder>
+      <exec_per_row>N</exec_per_row>
+      <filename>${PROJECT_HOME}/consinco/mrl_lanctoestoque.hpl</filename>
+      <loglevel>Basic</loglevel>
+      <parameters>
+        <parameter>
+          <name>WINDOW_DAYS</name>
+          <value>90</value>
+        </parameter>
+        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>
+      <params_from_previous>N</params_from_previous>
+      <run_configuration>local</run_configuration>
+      <set_append_logfile>N</set_append_logfile>
+      <set_logfile>N</set_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <parallel>N</parallel>
+      <xloc>160</xloc>
+      <yloc>312</yloc>
+      <attributes_hac/>
+    </action>
+    <action>
+      <name>mrl_custodia.hpl</name>
+      <description/>
+      <type>PIPELINE</type>
+      <attributes/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <clear_files>N</clear_files>
+      <clear_rows>N</clear_rows>
+      <create_parent_folder>N</create_parent_folder>
+      <exec_per_row>N</exec_per_row>
+      <filename>${PROJECT_HOME}/consinco/mrl_custodia.hpl</filename>
+      <loglevel>Basic</loglevel>
+      <parameters>
+        <parameter>
+          <name>WINDOW_DAYS</name>
+          <value>90</value>
+        </parameter>
+        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>
+      <params_from_previous>N</params_from_previous>
+      <run_configuration>local</run_configuration>
+      <set_append_logfile>N</set_append_logfile>
+      <set_logfile>N</set_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <parallel>N</parallel>
+      <xloc>128</xloc>
+      <yloc>348</yloc>
       <attributes_hac/>
     </action>
     <action>
@@ -716,6 +802,13 @@
     </hop>
     <hop>
       <from>mrl_prodempseg.hpl</from>
+      <to>mrl_local.hpl</to>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>mrl_local.hpl</from>
       <to>mrl_promocao.hpl</to>
       <enabled>Y</enabled>
       <evaluation>Y</evaluation>
@@ -737,6 +830,20 @@
     </hop>
     <hop>
       <from>mrl_promocaoitem.hpl</from>
+      <to>mrl_lanctoestoque.hpl</to>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>mrl_lanctoestoque.hpl</from>
+      <to>mrl_custodia.hpl</to>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>mrl_custodia.hpl</from>
       <to>maxv_abcdistribbase.hpl</to>
       <enabled>Y</enabled>
       <evaluation>Y</evaluation>
@@ -863,6 +970,27 @@
     </hop>
     <hop>
       <from>mrl_produtoempresa.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>mrl_local.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>mrl_lanctoestoque.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>mrl_custodia.hpl</from>
       <to>Notificar Erro</to>
       <enabled>Y</enabled>
       <evaluation>N</evaluation>

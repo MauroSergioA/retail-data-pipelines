@@ -966,3 +966,100 @@ models:
         description: Timestamp da carga via Hop.
         data_tests:
           - not_null
+
+  # ---------------------------------------------------------------------------
+  # Estoque
+  # ---------------------------------------------------------------------------
+  - name: stg_mrl_local
+    description: Locais de armazenagem de estoque por loja.
+    columns:
+      - name: empresa_id
+        description: Código da loja.
+        data_tests:
+          - not_null
+      - name: local_id
+        description: Código sequencial do local na loja.
+        data_tests:
+          - not_null
+      - name: descricao_local
+        description: Descrição do local (UPPER).
+      - name: tipo_local
+        description: Tipo do local (loja, depósito, etc.) (UPPER).
+      - name: status_local
+        description: Status do local (UPPER).
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  - name: stg_mrl_lanctoestoque
+    description: >
+      Lançamentos individuais de movimentação de estoque. tip_lancto preservado bruto
+      (E/S). Exceção à convenção do projeto: qtd_lancto e vlr_nf_lancto já saem com
+      sinal aplicado aqui (E=+1/S=-1), não na camada gold.
+    columns:
+      - name: movimento_id
+        description: Chave do lançamento individual (PK de origem).
+        data_tests:
+          - not_null
+          - unique
+      - name: empresa_id
+        description: Código da loja.
+        data_tests:
+          - not_null
+      - name: dta_movimento
+        description: Data da movimentação.
+        data_tests:
+          - not_null
+      - name: produto_id
+        description: Código sequencial do produto.
+        data_tests:
+          - not_null
+      - name: local_id
+        description: Código do local — FK para stg_mrl_local.local_id.
+      - name: cod_geral_oper
+        description: Código geral da operação que originou a movimentação.
+      - name: tip_lancto
+        description: "Tipo de lançamento bruto: E = entrada, S = saída."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['E', 'S']
+      - name: qtd_lancto
+        description: Quantidade lançada, já com sinal aplicado (E=+1/S=-1).
+      - name: vlr_nf_lancto
+        description: Valor de NF daquele lançamento específico, já com sinal aplicado.
+      - name: motivo_movto
+        description: Motivo da movimentação (perda, ajuste, transferência, etc.).
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  - name: stg_mrl_custodia
+    description: >
+      Snapshot diário de saldo e custo de estoque por produto/empresa. qtd_estoque_inicial
+      é a fonte oficial de saldo de abertura (calculada pelo Consinco, não por soma acumulada).
+    columns:
+      - name: produto_id
+        description: Código sequencial do produto.
+        data_tests:
+          - not_null
+      - name: dta_movimento
+        description: Data do snapshot.
+        data_tests:
+          - not_null
+      - name: empresa_id
+        description: Código da loja.
+        data_tests:
+          - not_null
+      - name: qtd_estoque_inicial
+        description: Saldo de estoque no início do dia — fonte oficial.
+      - name: custo_medio_dia_nf
+        description: Custo médio diário — valor de NF.
+      - name: custo_medio_dia_liquido
+        description: Custo médio diário — custo líquido empresa.
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
