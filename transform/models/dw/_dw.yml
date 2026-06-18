@@ -644,28 +644,22 @@ models:
           - unique
       - name: cnpj
         description: CNPJ (14 dígitos) consultado na API.
-      - name: situacao_cadastral
-        description: Código da situação cadastral retornado pela API.
       - name: descricao_situacao_cadastral
         description: "Situação cadastral: ATIVA, BAIXADA, SUSPENSA, etc."
       - name: regime_tributario
-        description: "Derivado em CASE: MEI, SIMPLES NACIONAL, REGIME NORMAL (REAL/PRESUMIDO) ou NÃO INFORMADO."
+        description: >
+          MEI, SIMPLES NACIONAL, REGIME NORMAL (REAL/PRESUMIDO) ou NÃO INFORMADO.
+          Derivado em stg_cnpj_dados_receita a partir dos campos booleanos da API.
         data_tests:
           - accepted_values:
               arguments:
                 values: ['MEI', 'SIMPLES NACIONAL', 'REGIME NORMAL (REAL/PRESUMIDO)', 'NÃO INFORMADO']
-      - name: opcao_pelo_simples
-        description: Booleano bruto da API — true/false/null (null = não informado).
       - name: data_opcao_pelo_simples
         description: Data de opção pelo Simples Nacional.
-      - name: opcao_pelo_mei
-        description: Booleano bruto da API — opção pelo MEI.
       - name: data_opcao_pelo_mei
         description: Data de opção pelo MEI.
       - name: porte
         description: Porte da empresa conforme Receita Federal (ex. DEMAIS, ME, EPP).
-      - name: descricao_porte
-        description: Descrição textual do porte, quando disponível.
       - name: capital_social
         description: Capital social declarado.
       - name: data_inicio_atividade
@@ -674,8 +668,6 @@ models:
         description: Código CNAE fiscal principal conforme Receita Federal.
       - name: cnae_fiscal_descricao
         description: Descrição do CNAE fiscal principal.
-      - name: fonte_api
-        description: "API que respondeu a consulta: minha_receita ou brasilapi."
       - name: carregado_em
         description: Timestamp da última atualização do registro pelo script de enriquecimento.
         data_tests:

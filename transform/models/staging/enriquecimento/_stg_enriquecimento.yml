@@ -3,14 +3,21 @@ version: 2
 models:
   - name: stg_cnpj_dados_receita
     description: >
-      Staging de bronze.cnpj_dados_receita. Cast de datas, sem humanização de
-      valores (feita na camada dw, conforme convenção do projeto).
+      Staging de bronze.cnpj_dados_receita. Cast de datas, UPPER() em campos de texto.
+      Exceção à convenção do projeto: regime_tributario já é derivado aqui (não na gold),
+      pois é resultado direto dos campos booleanos da própria fonte.
     columns:
       - name: cnpj
         description: CNPJ (14 dígitos) — chave primária.
         data_tests:
           - not_null
           - unique
+      - name: regime_tributario
+        description: "Derivado em CASE: MEI, SIMPLES NACIONAL, REGIME NORMAL (REAL/PRESUMIDO) ou NÃO INFORMADO."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['MEI', 'SIMPLES NACIONAL', 'REGIME NORMAL (REAL/PRESUMIDO)', 'NÃO INFORMADO']
       - name: carregado_em
         description: Timestamp da última atualização do registro pelo script de enriquecimento.
         data_tests:
