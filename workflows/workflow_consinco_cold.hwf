@@ -586,6 +586,66 @@
       <attributes_hac/>
     </action>
     <action>
+      <name>msu_pedidosuprim.hpl</name>
+      <description/>
+      <type>PIPELINE</type>
+      <attributes/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <clear_files>N</clear_files>
+      <clear_rows>N</clear_rows>
+      <create_parent_folder>N</create_parent_folder>
+      <exec_per_row>N</exec_per_row>
+      <filename>${PROJECT_HOME}/consinco/msu_pedidosuprim.hpl</filename>
+      <loglevel>Basic</loglevel>
+      <parameters>
+        <parameter>
+          <name>WINDOW_DAYS</name>
+          <value>180</value>
+        </parameter>
+        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>
+      <params_from_previous>N</params_from_previous>
+      <run_configuration>local</run_configuration>
+      <set_append_logfile>N</set_append_logfile>
+      <set_logfile>N</set_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <parallel>N</parallel>
+      <xloc>384</xloc>
+      <yloc>384</yloc>
+      <attributes_hac/>
+    </action>
+    <action>
+      <name>msu_psitemreceber.hpl</name>
+      <description/>
+      <type>PIPELINE</type>
+      <attributes/>
+      <add_date>N</add_date>
+      <add_time>N</add_time>
+      <clear_files>N</clear_files>
+      <clear_rows>N</clear_rows>
+      <create_parent_folder>N</create_parent_folder>
+      <exec_per_row>N</exec_per_row>
+      <filename>${PROJECT_HOME}/consinco/msu_psitemreceber.hpl</filename>
+      <loglevel>Basic</loglevel>
+      <parameters>
+        <parameter>
+          <name>WINDOW_DAYS</name>
+          <value>180</value>
+        </parameter>
+        <pass_all_parameters>Y</pass_all_parameters>
+      </parameters>
+      <params_from_previous>N</params_from_previous>
+      <run_configuration>local</run_configuration>
+      <set_append_logfile>N</set_append_logfile>
+      <set_logfile>N</set_logfile>
+      <wait_until_finished>Y</wait_until_finished>
+      <parallel>N</parallel>
+      <xloc>576</xloc>
+      <yloc>384</yloc>
+      <attributes_hac/>
+    </action>
+    <action>
       <name>maxv_abcentradabase.hpl</name>
       <description/>
       <type>PIPELINE</type>
@@ -611,7 +671,7 @@
       <set_logfile>N</set_logfile>
       <wait_until_finished>Y</wait_until_finished>
       <parallel>N</parallel>
-      <xloc>560</xloc>
+      <xloc>944</xloc>
       <yloc>384</yloc>
       <attributes_hac/>
     </action>
@@ -659,8 +719,8 @@
       <targetfilename>/tmp/hop-error-response.txt</targetfilename>
       <url>${HOP_WEBHOOK_ERROR_URL}</url>
       <parallel>N</parallel>
-      <xloc>848</xloc>
-      <yloc>512</yloc>
+      <xloc>864</xloc>
+      <yloc>752</yloc>
       <attributes_hac/>
     </action>
     <action>
@@ -689,7 +749,7 @@
       <set_logfile>N</set_logfile>
       <wait_until_finished>Y</wait_until_finished>
       <parallel>N</parallel>
-      <xloc>384</xloc>
+      <xloc>752</xloc>
       <yloc>384</yloc>
       <attributes_hac/>
     </action>
@@ -844,6 +904,20 @@
     </hop>
     <hop>
       <from>mrl_custodia.hpl</from>
+      <to>msu_pedidosuprim.hpl</to>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>msu_pedidosuprim.hpl</from>
+      <to>msu_psitemreceber.hpl</to>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>msu_psitemreceber.hpl</from>
       <to>maxv_abcdistribbase.hpl</to>
       <enabled>Y</enabled>
       <evaluation>Y</evaluation>
@@ -991,6 +1065,20 @@
     </hop>
     <hop>
       <from>mrl_custodia.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>msu_pedidosuprim.hpl</from>
+      <to>Notificar Erro</to>
+      <enabled>Y</enabled>
+      <evaluation>N</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>msu_psitemreceber.hpl</from>
       <to>Notificar Erro</to>
       <enabled>Y</enabled>
       <evaluation>N</evaluation>

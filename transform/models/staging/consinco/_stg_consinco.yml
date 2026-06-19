@@ -1036,6 +1036,58 @@ models:
         data_tests:
           - not_null
 
+  - name: stg_msu_pedidosuprim
+    description: >
+      Cabeçalho do pedido de compra/suprimento. Cobre Compras, Bonificação e
+      Transferência entre lojas (tip_pedido_suprim).
+    columns:
+      - name: pedido_id
+        description: Número do pedido de suprimento — chave primária.
+        data_tests:
+          - not_null
+          - unique
+      - name: empresa_id
+        description: Código da loja.
+        data_tests:
+          - not_null
+      - name: dta_emissao
+        description: Data de emissão do pedido — início do ciclo de lead time.
+        data_tests:
+          - not_null
+      - name: fornecedor_id
+        description: Fornecedor do pedido.
+      - name: situacao_ped
+        description: Situação do pedido.
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
+  - name: stg_msu_psitemreceber
+    description: >
+      Item do pedido de compra/suprimento — saldo a receber por produto.
+    columns:
+      - name: pedido_id
+        description: FK para stg_msu_pedidosuprim.
+        data_tests:
+          - not_null
+      - name: empresa_id
+        description: Código da loja.
+        data_tests:
+          - not_null
+      - name: produto_id
+        description: Código sequencial do produto — compõe a chave do grão (junto com pedido_id/empresa_id).
+        data_tests:
+          - not_null
+      - name: item_seq
+        description: >
+          Número sequencial do item, quando informado pela origem (só ~32% das linhas têm
+          valor — não é usado como chave).
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
   - name: stg_mrl_custodia
     description: >
       Snapshot diário de saldo e custo de estoque por produto/empresa. qtd_estoque_inicial

@@ -730,6 +730,59 @@ models:
         data_tests:
           - not_null
 
+  - name: fato_pedido_compra
+    description: >
+      Fato incremental de pedido de compra/suprimento, grão item (1 linha por
+      pedido_id + empresa_id + item_seq). Cobre Compras, Bonificação e Transferência
+      entre lojas (tip_pedido_suprim) — confirmado via SQL Monitor da tela do Consinco.
+      dias_lead_time_emissao_recebimento mede o ciclo completo desde a digitação do
+      pedido até o recebimento físico do item — métrica que mart_tempo_entrega_fornecedor
+      não cobre hoje (esse só mede emissão de NF até entrada).
+      nro_ped_suprim_orig/tipo_ped_venda/ind_transf_emp_sec são a provável ponte com
+      MAD_PEDVENDA (pedido de venda/transferência na loja de origem) — ainda não
+      implementado, registrado como próximo passo.
+    columns:
+      - name: pedido_id
+        description: Número do pedido de suprimento.
+        data_tests:
+          - not_null
+      - name: empresa_id
+        description: Código da loja.
+        data_tests:
+          - not_null
+      - name: produto_id
+        description: Código sequencial do produto — compõe a chave do grão (junto com pedido_id/empresa_id).
+        data_tests:
+          - not_null
+      - name: item_seq
+        description: >
+          Número sequencial do item, quando informado pela origem (só ~32% das linhas têm
+          valor — não é usado como chave, produto_id já garante unicidade dentro do pedido).
+      - name: fornecedor_id
+        description: Fornecedor do pedido.
+      - name: tip_pedido_suprim
+        description: "Tipo do pedido (valores observados: C, B, E, T, M — Compras/Bonificação/Transferência/etc.)."
+      - name: situacao_ped
+        description: Situação do pedido.
+      - name: status_item
+        description: "Status do item — 'C' observado como cancelado nos filtros de produção."
+      - name: dta_emissao
+        description: Data de emissão do pedido — início do ciclo de lead time.
+        data_tests:
+          - not_null
+      - name: dta_recebto_item
+        description: Data de recebimento do item — fim do ciclo de lead time.
+      - name: dias_lead_time_emissao_recebimento
+        description: dta_recebto_item - dta_emissao. NULL enquanto o item não foi recebido.
+      - name: motivo_pendencia
+        description: Motivo da quantidade estar pendente (prioriza o do item, cai para o do cabeçalho).
+      - name: nro_ped_suprim_orig
+        description: Pedido de origem — provável link com MAD_PEDVENDA.NROPEDVENDA em transferências.
+      - name: carregado_em
+        description: Timestamp da carga via Hop.
+        data_tests:
+          - not_null
+
   - name: fato_estoque_saldo_diario
     description: >
       Fato incremental no grão diário por produto/empresa (fonte: MRL_CUSTODIA).

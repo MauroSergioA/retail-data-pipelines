@@ -728,3 +728,47 @@ sources:
             description: Custo médio diário — custo líquido empresa.
           - name: _loaded_at
             description: Timestamp da carga via Hop.
+
+      # -------------------------------------------------------------------------
+      # Pedido de compra (suprimento)
+      # -------------------------------------------------------------------------
+      - name: msu_pedidosuprim
+        description: >
+          Cabeçalho do pedido de compra/suprimento. Cobre Compras, Bonificação e
+          Transferência entre lojas (TIPPEDIDOSUPRIM) — confirmado via SQL Monitor da
+          tela frmConsPedidoSuprim do Consinco. Janela de WINDOW_DAYS dias por DTAEMISSAO.
+        columns:
+          - name: nropedidosuprim
+            description: Número do pedido de suprimento — chave primária.
+          - name: nroempresa
+            description: Código da loja.
+          - name: situacaoped
+            description: Situação do pedido — mesmo domínio de MADV_SITUACAOPED.
+          - name: dtaemissao
+            description: Data de emissão do pedido — início do ciclo de lead time.
+          - name: dtarecebto
+            description: Data de recebimento (previsto/atual) — fim do ciclo de lead time.
+          - name: nropedsuprimorig
+            description: Pedido de origem — provável link com MAD_PEDVENDA em transferências.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
+
+      - name: msu_psitemreceber
+        description: >
+          Item do pedido de compra/suprimento — saldo a receber por produto. Exposta na
+          tela do Consinco via a view MACV_PSITEMRECEBER (que junta com o cabeçalho
+          MSU_PEDIDOSUPRIM). Janela de WINDOW_DAYS dias, filtrada via DTAEMISSAO do
+          cabeçalho (o item não tem coluna de data própria).
+        columns:
+          - name: nropedidosuprim
+            description: FK para o cabeçalho.
+          - name: nroempresa
+            description: Código da loja.
+          - name: seqproduto
+            description: Código sequencial do produto.
+          - name: statusitem
+            description: "Status do item: 'C' = cancelado, observado no filtro de produção."
+          - name: motivopendencia
+            description: Motivo da quantidade estar pendente — útil pra análise de atraso.
+          - name: _loaded_at
+            description: Timestamp da carga via Hop.
