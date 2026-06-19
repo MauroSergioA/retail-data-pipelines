@@ -58,10 +58,7 @@ SELECT
     COALESCE(i.motivo_pendencia, h.motivo_pendencia)            AS motivo_pendencia,
     h.nro_ped_suprim_orig,
     h.empresa_orig_id,
-    h.tipo_ped_venda,
-    h.ind_transf_emp_sec,
     h.observacao,
-    i.observacao_item,
     i.carregado_em
 FROM item i
 INNER JOIN header h ON h.pedido_id = i.pedido_id AND h.empresa_id = i.empresa_id

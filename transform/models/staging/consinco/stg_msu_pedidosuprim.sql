@@ -8,7 +8,16 @@ SELECT
     UPPER(centralloja)::TEXT         AS central_loja,
     seqcomprador::INTEGER            AS comprador_id,
     seqfornecedor::INTEGER           AS fornecedor_id,
-    UPPER(tippedidosuprim)::TEXT     AS tip_pedido_suprim,
+    CASE UPPER(tippedidosuprim)
+        WHEN 'X' THEN 'TRANSFERÊNCIA EXPEDIR'
+        WHEN 'T' THEN 'TRANSFERÊNCIA A RECEBER'
+        WHEN 'C' THEN 'COMPRA'
+        WHEN 'B' THEN 'BONIF INCIDÊNCIA CUSTO'
+        WHEN 'E' THEN 'BONIF SEM INCID CUSTO'
+        WHEN 'I' THEN 'BRINDE'
+        WHEN 'M' THEN 'IMPORTAÇÃO DIRETA'
+        ELSE UPPER(tippedidosuprim)::TEXT
+    END                              AS tip_pedido_suprim,
     UPPER(situacaoped)::TEXT         AS situacao_ped,
     dtaemissao::DATE                 AS dta_emissao,
     dtaemissaooriginal::DATE         AS dta_emissao_original,

@@ -733,14 +733,15 @@ models:
   - name: fato_pedido_compra
     description: >
       Fato incremental de pedido de compra/suprimento, grão item (1 linha por
-      pedido_id + empresa_id + item_seq). Cobre Compras, Bonificação e Transferência
-      entre lojas (tip_pedido_suprim) — confirmado via SQL Monitor da tela do Consinco.
+      pedido_id + empresa_id + produto_id — produto_id já garante unicidade, item_seq
+      não é usado como chave). Cobre Compras, Bonificação e Transferência entre lojas
+      (tip_pedido_suprim) — confirmado via SQL Monitor da tela do Consinco.
       dias_lead_time_emissao_recebimento mede o ciclo completo desde a digitação do
       pedido até o recebimento físico do item — métrica que mart_tempo_entrega_fornecedor
       não cobre hoje (esse só mede emissão de NF até entrada).
-      nro_ped_suprim_orig/tipo_ped_venda/ind_transf_emp_sec são a provável ponte com
-      MAD_PEDVENDA (pedido de venda/transferência na loja de origem) — ainda não
-      implementado, registrado como próximo passo.
+      nro_ped_suprim_orig é a provável ponte com MAD_PEDVENDA.NROPEDVENDA (pedido de
+      venda/transferência na loja de origem) — ainda não implementado, registrado como
+      próximo passo.
     columns:
       - name: pedido_id
         description: Número do pedido de suprimento.
@@ -761,7 +762,10 @@ models:
       - name: fornecedor_id
         description: Fornecedor do pedido.
       - name: tip_pedido_suprim
-        description: "Tipo do pedido (valores observados: C, B, E, T, M — Compras/Bonificação/Transferência/etc.)."
+        description: >
+          Tipo do pedido, já humanizado na staging (ex. COMPRA, TRANSFERÊNCIA A RECEBER,
+          BONIF INCIDÊNCIA CUSTO, IMPORTAÇÃO DIRETA) — mapeamento confirmado direto na
+          tela "Tipo do Pedido" do Consinco.
       - name: situacao_ped
         description: Situação do pedido.
       - name: status_item
