@@ -1,9 +1,15 @@
+{#
+  operador_id fora do unique_key de propósito: o Oracle às vezes preenche esse
+  campo retroativamente (NULL -> valor real numa extração posterior), o que muda
+  a chave entre cargas e quebra o delete+insert (a linha antiga nunca é apagada,
+  duplicando a venda). As outras colunas já identificam a linha de forma estável.
+#}
 {{ config(
     materialized='incremental',
     unique_key=[
         'datahora_venda', 'empresa_id', 'documento_numero', 'serie_documento',
         'checkout_id', 'forma_pagto_id', 'segmento_id', 'cod_operacao',
-        'produto_id', 'operador_id'
+        'produto_id'
     ],
     on_schema_change='append_new_columns',
     incremental_strategy='delete+insert',

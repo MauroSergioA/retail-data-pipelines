@@ -80,72 +80,76 @@ models:
       Métricas de custo e lucro calculadas pelas funções Oracle FC5 no momento
       da extração pelo Hop.
     columns:
-      - name: dta_hora_venda
-        description: Timestamp truncado à hora — compõe a chave única.
+      - name: datahora_venda
+        description: Timestamp da venda — compõe a chave única.
         data_tests:
           - not_null
-      - name: dta_venda
+      - name: data_venda
         description: Data da venda.
         data_tests:
           - not_null
       - name: hora_venda
         description: Hora da venda (0–23).
-      - name: nro_empresa
+      - name: empresa_id
         description: Código da loja.
         data_tests:
           - not_null
-      - name: nro_docto
+      - name: documento_numero
         description: Número do documento (cupom fiscal).
         data_tests:
           - not_null
-      - name: serie_docto
+      - name: serie_documento
         description: Série do documento fiscal.
-      - name: checkout
+      - name: checkout_id
         description: Número do checkout (caixa).
-      - name: nro_documento
+      - name: documento_chave
         description: Chave do documento fiscal — lpad(empresa,2)-lpad(docto,9)-serie-lpad(checkout,2).
         data_tests:
           - not_null
-      - name: nro_forma_pagto
+      - name: forma_pagto_id
         description: Código da forma de pagamento.
-      - name: nro_segmento
+      - name: segmento_id
         description: Número do segmento da venda.
-      - name: cod_geral_oper
+      - name: cod_operacao
         description: "Código da operação. Somente: 800, 810, 820, 828, 202."
         data_tests:
           - not_null
           - accepted_values:
               arguments:
                 values: [800, 810, 820, 828, 202]
-      - name: seq_produto
+      - name: produto_id
         description: Código sequencial do produto.
         data_tests:
           - not_null
-      - name: seq_operador
-        description: Código sequencial do operador de PDV.
-      - name: qtd_venda_item
+      - name: operador_id
+        description: >
+          Código sequencial do operador de PDV. Fora do unique_key do model
+          (ver comentário em fato_venda.sql) — o Oracle pode preenchê-lo
+          retroativamente, então não é confiável como parte da chave de
+          deduplicação.
+      - name: qtd_venda
         description: Quantidade vendida do item.
-      - name: qtd_devol_item
+      - name: qtd_devolvido
         description: Quantidade devolvida do item.
-      - name: qtd_venda_liq
-        description: Quantidade líquida — qtd_venda_item - qtd_devol_item.
-      - name: vlr_venda_item
+      - name: qtd_venda_liquida
+        description: Quantidade líquida — qtd_venda - qtd_devolvido.
+      - name: valor_venda
         description: Valor bruto da venda do item.
-      - name: vlr_devol_item
+      - name: valor_devolvido
         description: Valor da devolução do item.
-      - name: vlr_venda_liq
-        description: Valor líquido da venda — vlr_venda_item - vlr_devol_item.
-      - name: vlr_desconto_item
+      - name: valor_venda_liquido
+        description: Valor líquido da venda — valor_venda - valor_devolvido.
+      - name: valor_desconto
         description: Valor de desconto aplicado ao item.
-      - name: vlr_venda_promoc
+      - name: valor_venda_promocao
         description: Valor de venda promocional — função Oracle FC5_AbcDistribVendaPromoc.
-      - name: vlr_lucro
+      - name: valor_lucro
         description: Lucro — função Oracle FC5_AbcDistribLucratividade.
-      - name: vlr_custo_bruto
+      - name: valor_custo_bruto
         description: Custo bruto — função Oracle FC5_AbcDistribCustoBruto.
-      - name: vlr_custo_liquido
+      - name: valor_custo_liquido
         description: Custo líquido — função Oracle FC5_AbcDistribCustoLiquido.
-      - name: loaded_at
+      - name: carregado_em
         description: Timestamp da última carga do pipeline Hop.
         data_tests:
           - not_null
