@@ -1,0 +1,21 @@
+services:
+  evolution-go:
+    image: evoapicloud/evolution-go:latest
+    restart: unless-stopped
+    ports:
+      - "8091:8080"
+    environment:
+      SERVER_PORT: 8080
+      CLIENT_NAME: evolution
+      GLOBAL_API_KEY: ${EVOGO_GLOBAL_API_KEY}
+      POSTGRES_AUTH_DB: "postgresql://${EVOGO_DB_USER}:${EVOGO_DB_PASSWORD}@${PG_HOSTNAME}:${PG_PORT}/evogo_auth?sslmode=disable"
+      POSTGRES_USERS_DB: "postgresql://${EVOGO_DB_USER}:${EVOGO_DB_PASSWORD}@${PG_HOSTNAME}:${PG_PORT}/evogo_users?sslmode=disable"
+      DATABASE_SAVE_MESSAGES: "false"
+      WADEBUG: INFO
+      LOGTYPE: console
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
