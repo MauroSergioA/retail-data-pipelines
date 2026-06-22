@@ -18,7 +18,9 @@ SELECT
     nrosegmento::INTEGER                                    AS segmento_id,
     codgeraloper::INTEGER                                   AS cod_operacao,
     seqproduto::INTEGER                                     AS produto_id,
-    seqoperador::INTEGER                                    AS operador_id,
+    -- sentinela -1 em vez de NULL: NULL no unique_key quebra o delete+insert
+    -- do dbt (DELETE ... WHERE (chaves) IN (...) nunca casa quando alguma chave é NULL)
+    COALESCE(seqoperador::INTEGER, -1)                      AS operador_id,
     qtditem::NUMERIC                                        AS qtd_venda,
     qtddevolitem::NUMERIC                                   AS qtd_devolvido,
     (qtditem::NUMERIC - qtddevolitem::NUMERIC)              AS qtd_venda_liquida,

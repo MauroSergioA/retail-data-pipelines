@@ -54,7 +54,7 @@
       <schema_name/>
     </partitioning>
     <commit>50000</commit>
-    <connection>PostgreSQL-Servidor-Superque</connection>
+    <connection>postgresql-server</connection>
     <fields>
 </fields>
     <ignore_errors>N</ignore_errors>
