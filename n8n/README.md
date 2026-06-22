@@ -1,6 +1,6 @@
 # n8n — Workflows
 
-Exportação dos 8 workflows de orquestração para recuperação de desastres e versionamento.
+Exportação dos 7 workflows de orquestração para recuperação de desastres e versionamento.
 
 > **Atualizar sempre que um workflow for alterado no n8n UI:**
 > editar no n8n → exportar JSON → substituir o arquivo aqui → commitar.
@@ -17,8 +17,11 @@ Exportação dos 8 workflows de orquestração para recuperação de desastres e
 | `04-hot-trigger-hop.json` | Cron 08h/12h/15h/18h | Dispara Hop hot (workflow_consinco_hot) |
 | `05-hot-callback-dbt-telegram.json` | Webhook `vendas-hot` | Roda dbt após Hop hot → Telegram |
 | `06-mensal-curva-abc-tempo-entrega.json` | Cron dia 1, 02:00 | Curva ABC + Tempo Entrega → Telegram |
-| `07-fornecedores-cnpj-diario.json` | **Desativado** — lógica migrou pro 02 | Mantido como referência histórica, ver nota abaixo |
 | `08-fornecedores-cnpj-mensal-full.json` | Cron dia 1, 03:00 | Enriquecimento de CNPJ full (reprocessa tudo) → Telegram |
+
+> Não existe mais um `07`: era o "Enriquecer CNPJ (diário)" standalone, **excluído** em
+> 2026-06-22 — a lógica (chamada `/run-cnpj` + checagem + notificação) foi migrada pro
+> workflow 02, ver nota abaixo. A numeração ficou com esse buraco de propósito (histórico).
 
 ### Notas operacionais (2026-06-22)
 
@@ -34,22 +37,21 @@ Exportação dos 8 workflows de orquestração para recuperação de desastres e
   restauração). Cobre o caso do item acima: se "Executar dbt" falhar/expirar de novo,
   o `Error Trigger` do workflow 03 dispara um alerta genérico no Telegram, em vez de
   falhar silenciosamente.
-- **`parse_mode: "none"` nos nós "Notificar Erro" de 07/08:** esses nós mandam o
-  `stdout`/`stderr` bruto do script Python no Telegram. Sem `parse_mode` explícito o
-  Telegram tentava interpretar o texto como Markdown e travava com
-  `Bad Request: can't parse entities` sempre que o traceback tinha caracteres como `_`
-  ou `*` — ironicamente quebrando o próprio alerta de erro. Com `parse_mode: "none"` o
-  texto vai sempre como plano, sem essa fragilidade.
-- **CNPJ diário (07) migrado pro fluxo do 02 — corrige corrida de horário:** o 07 rodava
-  num cron fixo de 02:30, sem saber se o `dbt run` cold já tinha terminado de recriar
-  `gold.dim_fornecedor_info`. Num incidente real, o cold só terminou às 02:31:47 — 1min
-  *depois* do CNPJ já ter disparado. Em vez de só aumentar a margem de segurança do cron,
-  a chamada `/run-cnpj` (+ checagem `returncode` + notificação) foi movida pra dentro do
-  workflow 02, disparando em paralelo com `Notificar Sucesso` só depois do `dbt Sucesso?`
-  confirmar sucesso de fato. O workflow 07 standalone foi desativado (`active=false`) — o
-  arquivo `07-fornecedores-cnpj-diario.json` fica só como referência histórica/de
-  reconstrução parcial; **não reativar sem remover o trecho equivalente do 02**, senão
-  o enriquecimento roda duas vezes por dia.
+- **`parse_mode: "none"` no nó "Notificar Erro" do 08** (e no equivalente "Notificar Erro
+  CNPJ" dentro do 02): esses nós mandam o `stdout`/`stderr` bruto do script Python no
+  Telegram. Sem `parse_mode` explícito o Telegram tentava interpretar o texto como
+  Markdown e travava com `Bad Request: can't parse entities` sempre que o traceback tinha
+  caracteres como `_` ou `*` — ironicamente quebrando o próprio alerta de erro. Com
+  `parse_mode: "none"` o texto vai sempre como plano, sem essa fragilidade.
+- **CNPJ diário migrado pro fluxo do 02 — corrige corrida de horário:** existia um
+  workflow `07 · Enriquecer CNPJ (diário)` standalone, num cron fixo de 02:30, sem saber
+  se o `dbt run` cold já tinha terminado de recriar `gold.dim_fornecedor_info`. Num
+  incidente real, o cold só terminou às 02:31:47 — 1min *depois* do CNPJ já ter disparado.
+  Em vez de só aumentar a margem de segurança do cron, a chamada `/run-cnpj` (+ checagem
+  `returncode` + notificação) foi movida pra dentro do workflow 02 (nós "Enriquecer CNPJ
+  (diário)" → "CNPJ Sucesso?" → "Notificar Sucesso/Erro CNPJ"), disparando em paralelo com
+  "Notificar Sucesso" só depois do "dbt Sucesso?" confirmar sucesso de fato. O workflow 07
+  standalone foi **excluído** (não só desativado) em 2026-06-22.
 
 ---
 
@@ -66,7 +68,8 @@ Antes de importar, criar as credenciais em **Settings → Credentials**:
 
 ### 2. Importar os workflows
 
-No n8n: **Workflows → Import from file** → importar cada JSON em ordem (01 a 08).
+No n8n: **Workflows → Import from file** → importar cada JSON (01 a 06, depois 08 —
+não existe 07, ver nota acima).
 
 Após importar cada workflow com Telegram, **substituir `<TELEGRAM_CHAT_ID>`** pelo valor real
 (disponível em `docs/credenciais.md` → seção Telegram).
@@ -84,7 +87,7 @@ o nó `Error Trigger` do 03 e mandem um alerta no Telegram.
 
 ### 5. Ativar os workflows
 
-Ativar todos os 8 workflows. Para os que têm webhook (02, 03, 05), fazer ciclo
+Ativar todos os 7 workflows. Para os que têm webhook (02, 03, 05), fazer ciclo
 **deactivate → activate** para registrar os endpoints.
 
 ### 6. Verificar os webhooks
