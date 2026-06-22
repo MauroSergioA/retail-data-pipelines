@@ -1,0 +1,20 @@
+services:
+  nocodb:
+    image: nocodb/nocodb:latest
+    restart: unless-stopped
+    ports:
+      - "8090:8080"
+    environment:
+      NC_DB: "pg://${PG_HOSTNAME}:${PG_PORT}?u=${NOCODB_DB_USER}&p=${NOCODB_DB_PASSWORD}&d=${NOCODB_DB_NAME}"
+      NC_PUBLIC_URL: "https://${NOCODB_HOST}"
+    volumes:
+      - nc_data:/usr/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+
+volumes:
+  nc_data:
