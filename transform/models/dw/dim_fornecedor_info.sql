@@ -1,3 +1,7 @@
+{{ config(
+    grants={'select': ['enrichment_user']}
+) }}
+
 WITH fornecedor_familia AS (
     SELECT distinct ON (fornecedor_id)
         fornecedor_id,

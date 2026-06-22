@@ -31,11 +31,34 @@
       "position": [96, -16],
       "id": "93e080bc-ca87-4c43-ac11-aa2deb385446",
       "name": "Telegram - Erro Pipeline Cold"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [-480, 160],
+      "id": "a1e9c1f4-6b3d-4b1a-9b0a-1f6c2d8e9a01",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "chatId": "<TELEGRAM_CHAT_ID>",
+        "text": "=⚠️ ERRO — Workflow n8n\n\n📋 {{ $json.workflow.name }}\n🔴 Nó: {{ $json.execution.lastNodeExecuted }}\n📝 {{ $json.execution.error.message }}\n\nVerifique a execução no n8n.",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [96, 160],
+      "id": "b2f0d2f5-7c4e-4c2b-ac1b-2f7d3e9f0a02",
+      "name": "Telegram - Erro Workflow n8n"
     }
   ],
   "connections": {
     "Receber Erro Hop": {
       "main": [[{ "node": "Telegram - Erro Pipeline Cold", "type": "main", "index": 0 }]]
+    },
+    "Error Trigger": {
+      "main": [[{ "node": "Telegram - Erro Workflow n8n", "type": "main", "index": 0 }]]
     }
   },
   "settings": {

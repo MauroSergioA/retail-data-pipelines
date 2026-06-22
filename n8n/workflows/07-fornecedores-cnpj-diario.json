@@ -1,0 +1,96 @@
+{
+  "name": "07 · Fornecedores — Enriquecer CNPJ (diário)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "triggerAtHour": 2, "triggerAtMinute": 30 }] }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [-448, -16],
+      "id": "83fc283b-8250-419d-890d-1c5c3104dfc0",
+      "name": "Diário 02:30"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/run-cnpj",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": { "timeout": 1800000 }
+      },
+      "credentials": {
+        "httpHeaderAuth": { "id": "Vo79O80LNX6gh7wt", "name": "Trigger API Key" }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [-48, -16],
+      "id": "9c5b1067-1b1c-428b-8d55-79f2a6450dfc",
+      "name": "Enriquecer CNPJ"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.returncode }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [352, -16],
+      "id": "351b6bc8-81c7-4978-b2a6-794ed92a6a1c",
+      "name": "Sucesso?"
+    },
+    {
+      "parameters": {
+        "chatId": "<TELEGRAM_CHAT_ID>",
+        "text": "=✅ Enriquecimento de CNPJ (diário)\n📦 {{ $json.stdout.match(/Concluido: (\\d+) ok/)?.[1] ?? \"0\" }} fornecedor(es) atualizado(s)\n⏱ {{ new Date().toLocaleDateString('pt-BR') }}",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [736, -176],
+      "id": "4f362b5e-5c5c-4922-966b-b1cf6268e09a",
+      "name": "Notificar Sucesso"
+    },
+    {
+      "parameters": {
+        "chatId": "<TELEGRAM_CHAT_ID>",
+        "text": "=❌ Enriquecimento de CNPJ (diário) falhou\n🔍 {{ $json.stderr || $json.stdout.slice(-500) }}",
+        "additionalFields": { "appendAttribution": false, "parse_mode": "none" }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [752, 160],
+      "id": "65958ba1-156e-4508-b368-ea56032ca065",
+      "name": "Notificar Erro"
+    }
+  ],
+  "connections": {
+    "Diário 02:30": {
+      "main": [[{ "node": "Enriquecer CNPJ", "type": "main", "index": 0 }]]
+    },
+    "Enriquecer CNPJ": {
+      "main": [[{ "node": "Sucesso?", "type": "main", "index": 0 }]]
+    },
+    "Sucesso?": {
+      "main": [
+        [{ "node": "Notificar Sucesso", "type": "main", "index": 0 }],
+        [{ "node": "Notificar Erro", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}
