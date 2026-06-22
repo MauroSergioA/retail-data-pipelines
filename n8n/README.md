@@ -17,7 +17,7 @@ Exportação dos 8 workflows de orquestração para recuperação de desastres e
 | `04-hot-trigger-hop.json` | Cron 08h/12h/15h/18h | Dispara Hop hot (workflow_consinco_hot) |
 | `05-hot-callback-dbt-telegram.json` | Webhook `vendas-hot` | Roda dbt após Hop hot → Telegram |
 | `06-mensal-curva-abc-tempo-entrega.json` | Cron dia 1, 02:00 | Curva ABC + Tempo Entrega → Telegram |
-| `07-fornecedores-cnpj-diario.json` | Cron 02:30 | Enriquecimento de CNPJ incremental → Telegram |
+| `07-fornecedores-cnpj-diario.json` | **Desativado** — lógica migrou pro 02 | Mantido como referência histórica, ver nota abaixo |
 | `08-fornecedores-cnpj-mensal-full.json` | Cron dia 1, 03:00 | Enriquecimento de CNPJ full (reprocessa tudo) → Telegram |
 
 ### Notas operacionais (2026-06-22)
@@ -40,6 +40,16 @@ Exportação dos 8 workflows de orquestração para recuperação de desastres e
   `Bad Request: can't parse entities` sempre que o traceback tinha caracteres como `_`
   ou `*` — ironicamente quebrando o próprio alerta de erro. Com `parse_mode: "none"` o
   texto vai sempre como plano, sem essa fragilidade.
+- **CNPJ diário (07) migrado pro fluxo do 02 — corrige corrida de horário:** o 07 rodava
+  num cron fixo de 02:30, sem saber se o `dbt run` cold já tinha terminado de recriar
+  `gold.dim_fornecedor_info`. Num incidente real, o cold só terminou às 02:31:47 — 1min
+  *depois* do CNPJ já ter disparado. Em vez de só aumentar a margem de segurança do cron,
+  a chamada `/run-cnpj` (+ checagem `returncode` + notificação) foi movida pra dentro do
+  workflow 02, disparando em paralelo com `Notificar Sucesso` só depois do `dbt Sucesso?`
+  confirmar sucesso de fato. O workflow 07 standalone foi desativado (`active=false`) — o
+  arquivo `07-fornecedores-cnpj-diario.json` fica só como referência histórica/de
+  reconstrução parcial; **não reativar sem remover o trecho equivalente do 02**, senão
+  o enriquecimento roda duas vezes por dia.
 
 ---
 
