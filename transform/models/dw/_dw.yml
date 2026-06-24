@@ -746,11 +746,15 @@ models:
       ATENÇÃO — NUNCA usar --full-refresh neste model: bronze.msu_pedidosuprim é janela
       rolante de 180 dias (truncate+reload a cada cold), mas o gold acumula histórico
       desde 2022 (2,27M linhas vs ~27k no bronze atual). Full-refresh reconstruiria a
-      tabela só com os últimos 180 dias, destruindo o resto. Por esse mesmo motivo,
-      colunas humanizadas na staging (tip_pedido_suprim, situacao_ped, central_loja)
-      só ficam com o valor legível dentro da janela atual — histórico mais antigo
-      mantém o código bruto da origem (L/M, A/C/P etc.) até ser reprocessado via
-      pipeline histórico (raramente vale o custo só por isso).
+      tabela só com os últimos 180 dias, destruindo o resto.
+      Colunas humanizadas na staging (tip_pedido_suprim, situacao_ped, central_loja) só
+      ficam com o valor legível dentro da janela atual quando vêm de um run incremental
+      normal — histórico fora da janela manteria o código bruto da origem (L/M, A/C/P
+      etc.) até reprocessamento. Em 2026-06-24 isso foi corrigido retroativamente com
+      um `UPDATE` direto em `gold.fato_pedido_compra` (sem tocar bronze nem reconstruir
+      a tabela) — hoje as 2.279.427 linhas estão 100% humanizadas. Se uma recarga
+      histórica futura (pipeline `*_historico.hpl`) trouxer um período antigo de volta,
+      repetir esse `UPDATE` pontual pra esse range.
       nro_ped_suprim_orig é a provável ponte com MAD_PEDVENDA.NROPEDVENDA (pedido de
       venda/transferência na loja de origem) — ainda não implementado, registrado como
       próximo passo.
@@ -774,9 +778,8 @@ models:
       - name: central_loja
         description: >
           Origem do pedido — LOJA ou MATRIZ (humanizado na staging, confirmado com o
-          usuário; valores brutos na origem são L/M). Mesma ressalva de janela rolante
-          do situacao_ped: histórico fora dos últimos 180 dias pode aparecer com o
-          código bruto.
+          usuário; valores brutos na origem são L/M). Histórico backfillado em
+          2026-06-24 (ver nota no nível do model) — hoje 100% humanizado.
       - name: fornecedor_id
         description: Fornecedor do pedido.
       - name: tip_pedido_suprim
@@ -788,14 +791,10 @@ models:
         description: >
           Situação do pedido, humanizada na staging a partir do domínio real
           (bronze.madv_situacaoped): LIBERADO, ANÁLISE, ROTEIRIZAÇÃO, SEPARAÇÃO,
-          FATURADO, CANCELADO, DIGITAÇÃO, PRÉ-SEPARAÇÃO, SEPARADO. Atenção: como
-          `bronze.msu_pedidosuprim` é janela rolante de 180 dias (truncate+reload a
-          cada cold) e o model é incremental, **linhas com dta_emissao anterior à
-          janela atual ficam com o código bruto** (L, A, C, P...) — só normalizam se
-          esse período for reprocessado via pipeline histórico. Não fazer
-          `--full-refresh` neste model: destruiria o histórico acumulado desde 2022
-          (bronze não tem mais que 180 dias, full-refresh reconstrói só com o que
-          está lá).
+          FATURADO, CANCELADO, DIGITAÇÃO, PRÉ-SEPARAÇÃO, SEPARADO. Histórico
+          backfillado em 2026-06-24 (ver nota no nível do model) — hoje 100%
+          humanizado. Nunca usar `--full-refresh` neste model (destruiria o
+          histórico — ver nota no nível do model).
       - name: status_item
         description: "Status do item — 'C' observado como cancelado nos filtros de produção."
       - name: dta_emissao
