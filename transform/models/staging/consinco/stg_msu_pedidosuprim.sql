@@ -5,7 +5,11 @@ WITH source AS (
 SELECT
     nropedidosuprim::BIGINT          AS pedido_id,
     nroempresa::INTEGER              AS empresa_id,
-    UPPER(centralloja)::TEXT         AS central_loja,
+    CASE UPPER(centralloja)
+        WHEN 'L' THEN 'LOJA'
+        WHEN 'M' THEN 'MATRIZ'
+        ELSE UPPER(centralloja)::TEXT
+    END                              AS central_loja,
     seqcomprador::INTEGER            AS comprador_id,
     seqfornecedor::INTEGER           AS fornecedor_id,
     CASE UPPER(tippedidosuprim)
@@ -18,7 +22,18 @@ SELECT
         WHEN 'M' THEN 'IMPORTAÇÃO DIRETA'
         ELSE UPPER(tippedidosuprim)::TEXT
     END                              AS tip_pedido_suprim,
-    UPPER(situacaoped)::TEXT         AS situacao_ped,
+    CASE UPPER(situacaoped)
+        WHEN 'L' THEN 'LIBERADO'
+        WHEN 'A' THEN 'ANÁLISE'
+        WHEN 'R' THEN 'ROTEIRIZAÇÃO'
+        WHEN 'S' THEN 'SEPARAÇÃO'
+        WHEN 'F' THEN 'FATURADO'
+        WHEN 'C' THEN 'CANCELADO'
+        WHEN 'D' THEN 'DIGITAÇÃO'
+        WHEN 'P' THEN 'PRÉ-SEPARAÇÃO'
+        WHEN 'W' THEN 'SEPARADO'
+        ELSE UPPER(situacaoped)::TEXT
+    END                              AS situacao_ped,
     dtaemissao::DATE                 AS dta_emissao,
     dtaemissaooriginal::DATE         AS dta_emissao_original,
     dtarecebto::DATE                 AS dta_recebto,
@@ -48,7 +63,11 @@ SELECT
     diasprorrogacao::INTEGER         AS dias_prorrogacao,
     nropedsuprimorig::BIGINT         AS nro_ped_suprim_orig,
     nroempresaorig::INTEGER          AS empresa_orig_id,
-    UPPER(centrallojaorig)::TEXT     AS central_loja_orig,
+    CASE UPPER(centrallojaorig)
+        WHEN 'L' THEN 'LOJA'
+        WHEN 'M' THEN 'MATRIZ'
+        ELSE UPPER(centrallojaorig)::TEXT
+    END                              AS central_loja_orig,
     UPPER(tipopedvenda)::TEXT        AS tipo_ped_venda,
     UPPER(indtransfempsec)::TEXT     AS ind_transf_emp_sec,
     nrorequisicao::BIGINT            AS nro_requisicao,

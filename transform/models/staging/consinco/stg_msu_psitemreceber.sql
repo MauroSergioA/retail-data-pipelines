@@ -5,7 +5,11 @@ WITH source AS (
 SELECT
     nropedidosuprim::BIGINT          AS pedido_id,
     nroempresa::INTEGER              AS empresa_id,
-    UPPER(centralloja)::TEXT         AS central_loja,
+    CASE UPPER(centralloja)
+        WHEN 'L' THEN 'LOJA'
+        WHEN 'M' THEN 'MATRIZ'
+        ELSE UPPER(centralloja)::TEXT
+    END                              AS central_loja,
     seqproduto::INTEGER              AS produto_id,
     seqitem::INTEGER                 AS item_seq,
     qtdsolicitada::NUMERIC           AS qtd_solicitada,
