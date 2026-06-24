@@ -23,6 +23,18 @@ Exportação dos 7 workflows de orquestração para recuperação de desastres e
 > 2026-06-22 — a lógica (chamada `/run-cnpj` + checagem + notificação) foi migrada pro
 > workflow 02, ver nota abaixo. A numeração ficou com esse buraco de propósito (histórico).
 
+### Notas operacionais (2026-06-24)
+
+- **Resumo de tempo do Hop na notificação (workflows 02 e 05):** o `hop-run-server.py`
+  agora grava a duração de cada pipeline do workflow Hop em `bronze.hop_execution_log`.
+  O `dbt-server.py` busca o top 5 mais lento da última execução e devolve no campo
+  `hop_timing` da resposta do `/run`. O nó "Notificar Sucesso" de ambos os workflows
+  mostra esse campo (`🐘 Hop: ...`) — assim fica visível direto no Telegram qual tabela
+  está pesando, sem precisar ir atrás de log manualmente. Motivado por descobrir que
+  `mrl_lanctoestoque` sozinho consumia 42% do tempo total do cold. No workflow 05 o nó
+  HTTP se chama `dbt - Vendas Hot` (não "Executar dbt" como no 02) — atenção ao nome
+  certo na expressão `$('...')​.item.json.hop_timing` se for replicar em outro workflow.
+
 ### Notas operacionais (2026-06-22)
 
 - **Timeout do nó "Executar dbt" (workflow 02):** aumentado de 30min para **90min**
