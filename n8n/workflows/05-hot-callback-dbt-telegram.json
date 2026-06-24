@@ -68,7 +68,7 @@
     {
       "parameters": {
         "chatId": "<TELEGRAM_CHAT_ID>",
-        "text": "=✅ Vendas Hot atualizada\n🕐 {{ new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) }}",
+        "text": "=✅ Vendas Hot atualizada\n🐘 Hop: {{ $('dbt - Vendas Hot').item.json.hop_timing ?? 'n/d' }}\n🕐 {{ new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) }}",
         "additionalFields": { "appendAttribution": false }
       },
       "type": "n8n-nodes-base.telegram",
