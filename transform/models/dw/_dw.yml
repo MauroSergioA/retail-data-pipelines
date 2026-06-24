@@ -796,7 +796,15 @@ models:
           humanizado. Nunca usar `--full-refresh` neste model (destruiria o
           histórico — ver nota no nível do model).
       - name: status_item
-        description: "Status do item — 'C' observado como cancelado nos filtros de produção."
+        description: >
+          Status do item, humanizado na staging: ABERTO, CANCELADO, PENDENTE.
+          Confirmado contra a legenda real da tela "Pedido de Compras/Transferências
+          de Suprimentos" do Consinco ("Status Item Pendente", "Parcialmente/
+          Totalmente Cancelado") + comportamento de QTDTOTRECEBIDA/QTDTOTCANCELADA via
+          SQL Monitor. Os indicadores visuais de "Recebido total/parcial" da tela são
+          derivados das quantidades, não são valores próprios desta coluna (só existem
+          3 códigos brutos: A, C, P). Histórico backfillado em 2026-06-24 (ver nota no
+          nível do model) — hoje 100% humanizado.
       - name: dta_emissao
         description: Data de emissão do pedido — início do ciclo de lead time.
         data_tests:

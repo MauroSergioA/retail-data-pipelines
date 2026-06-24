@@ -19,7 +19,12 @@ SELECT
     qtdtotrecebida::NUMERIC          AS qtd_tot_recebida,
     qtdtotcancelada::NUMERIC         AS qtd_tot_cancelada,
     qtdtottransito::NUMERIC          AS qtd_tot_transito,
-    UPPER(statusitem)::TEXT          AS status_item,
+    CASE UPPER(statusitem)
+        WHEN 'A' THEN 'ABERTO'
+        WHEN 'C' THEN 'CANCELADO'
+        WHEN 'P' THEN 'PENDENTE'
+        ELSE UPPER(statusitem)::TEXT
+    END                              AS status_item,
     dtaaprovacao::DATE               AS dta_aprovacao,
     dtarecebtoitem::DATE             AS dta_recebto_item,
     vlrunitario::NUMERIC             AS vlr_unitario,
