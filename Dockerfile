@@ -8,7 +8,7 @@ ENV HOP_OPTIONS=-Xmx3g
 
 USER root
 
-RUN apk add --no-cache python3 su-exec
+RUN apk add --no-cache python3 su-exec postgresql-client
 
 RUN curl -fsSL \
     "https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc8/21.9.0.0/ojdbc8-21.9.0.0.jar" \

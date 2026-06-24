@@ -11,6 +11,40 @@ DBT_PROFILES_DIR = "/home/dbt_user/.dbt"
 _API_KEY = os.environ.get("TRIGGER_API_KEY", "")
 
 
+def _hop_timing_summary():
+    """Fetch the most recent Hop workflow execution's slowest pipelines, to surface
+    in the same Telegram notification that already reports the dbt run result."""
+    try:
+        import psycopg2
+        conn = psycopg2.connect(
+            host=os.environ.get("PG_HOSTNAME"),
+            port=os.environ.get("PG_PORT", "5432"),
+            dbname=os.environ.get("PG_DATABASE", "superque"),
+            user=os.environ.get("DBT_USERNAME"),
+            password=os.environ.get("DBT_PASSWORD"),
+            connect_timeout=5,
+        )
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT pipeline_name, duration_seconds
+                    FROM bronze.hop_execution_log
+                    WHERE execution_id = (SELECT MAX(execution_id) FROM bronze.hop_execution_log)
+                    ORDER BY duration_seconds DESC
+                    LIMIT 5
+                    """
+                )
+                rows = cur.fetchall()
+        finally:
+            conn.close()
+        if not rows:
+            return None
+        return "; ".join(f"{name} {int(dur)}s" for name, dur in rows)
+    except Exception:
+        return None
+
+
 class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/health":
@@ -63,11 +97,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 cmd += ["--exclude", "tag:monthly"]
 
             result = subprocess.run(cmd, capture_output=True, text=True)
-            self._respond(200, {
+            response = {
                 "returncode": result.returncode,
                 "stdout": result.stdout[-4000:],
                 "stderr": result.stderr[-2000:],
-            })
+            }
+            hop_timing = _hop_timing_summary()
+            if hop_timing:
+                response["hop_timing"] = hop_timing
+            self._respond(200, response)
         else:
             self._respond(404, {"error": "not found"})
 
