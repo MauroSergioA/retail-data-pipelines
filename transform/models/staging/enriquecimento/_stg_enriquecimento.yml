@@ -43,3 +43,34 @@ models:
         description: Valor do indicador no mês.
         data_tests:
           - not_null
+
+  - name: stg_nocodb_meta_parametros
+    description: >
+      Staging de nocodb.meta_parametros (input manual da diretoria, lido via
+      postgres_fdw — ver docs/operacao/nocodb.md). Cast simples + fallback do
+      Desafio pro valor de Padrão quando vazio.
+    columns:
+      - name: mes
+        description: Mês de referência. Chave primária.
+        data_tests:
+          - not_null
+          - unique
+      - name: meta_grupo_padrao_valor
+        description: Meta de faturamento do grupo (R$), cenário Padrão — definida pela diretoria.
+        data_tests:
+          - not_null
+
+  - name: stg_nocodb_meta_ajustes_loja
+    description: >
+      Staging de nocodb.meta_ajustes_loja (input manual da diretoria, via FDW).
+      Cast simples + COALESCE de ajuste vazio pra zero. Teste de soma-zero por
+      mês em tests/stg_nocodb_meta_ajustes_loja_soma_zero.sql.
+    columns:
+      - name: mes
+        description: Mês de referência — combina com stg_nocodb_meta_parametros.mes.
+        data_tests:
+          - not_null
+      - name: empresa_id
+        description: ID da loja ajustada. Nunca empresa_id = 1 (MATRIZ).
+        data_tests:
+          - not_null

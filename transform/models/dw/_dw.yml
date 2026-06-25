@@ -208,6 +208,34 @@ models:
         data_tests:
           - not_null
 
+  - name: mart_meta_comercial
+    description: >
+      Rateio da meta comercial do grupo (definida pela diretoria em
+      nocodb.meta_parametros) por loja e categoria — substitui o rateio manual
+      no Excel (ver docs/negocio/redesign_dashboards.md, "Meta comercial -
+      desenho fechado"). Grão: mes × empresa_id × categoria_id. Participação %
+      usa o MESMO MÊS em cada ano anterior (não trailing consecutivo) —
+      preserva sazonalidade de categoria.
+    columns:
+      - name: mes
+        description: Mês de referência da meta.
+      - name: empresa_id
+        description: Loja — nunca empresa_id = 1 (MATRIZ, excluída do rateio).
+      - name: categoria_id
+        description: Categoria do produto (dim_produto_info.categoria_id).
+      - name: meta_padrao_valor
+        description: Meta de faturamento (R$) — cenário Padrão — pra essa loja × categoria nesse mês.
+        data_tests:
+          - not_null
+      - name: meta_desafio_valor
+        description: Meta de faturamento (R$) — cenário Desafio — pra essa loja × categoria nesse mês.
+        data_tests:
+          - not_null
+      - name: carregado_em
+        description: Timestamp do build dbt.
+        data_tests:
+          - not_null
+
   - name: mart_meta_referencia_grupo
     description: >
       Apoio à definição da meta comercial do grupo — não é a meta em si (ver

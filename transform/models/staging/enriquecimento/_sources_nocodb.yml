@@ -21,8 +21,15 @@ sources:
             description: Meta de faturamento do grupo (R$), cenário Padrão.
           - name: meta_grupo_desafio_valor
             description: Meta de faturamento do grupo (R$), cenário Desafio — se vazio, usa o valor de Padrão.
-          - name: janela_meses
-            description: Quantos meses de histórico usar pra calcular a participação % de cada loja/categoria.
+          - name: anos_historico
+            description: >
+              Quantos anos anteriores considerar pra calcular a participação %
+              de cada loja/categoria — compara o MESMO MÊS em cada ano anterior
+              (não trailing consecutivo), pra preservar sazonalidade de
+              categoria (ex.: Material Escolar em jan/fev, Decoração Natalina
+              em dez). Renomeado de janela_meses em 2026-06-25 — o conceito de
+              "janela de meses corridos" não fazia mais sentido depois da
+              correção do viés sazonal.
       - name: meta_ajustes_loja
         description: >
           Ajuste manual (zero-sum) na meta de uma loja específica, pros dois
