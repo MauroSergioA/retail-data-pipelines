@@ -1,6 +1,6 @@
 # n8n — Workflows
 
-Exportação dos 7 workflows de orquestração para recuperação de desastres e versionamento.
+Exportação dos 9 workflows de orquestração para recuperação de desastres e versionamento.
 
 > **Atualizar sempre que um workflow for alterado no n8n UI:**
 > editar no n8n → exportar JSON → substituir o arquivo aqui → commitar.
@@ -18,6 +18,8 @@ Exportação dos 7 workflows de orquestração para recuperação de desastres e
 | `05-hot-callback-dbt-telegram.json` | Webhook `vendas-hot` | Roda dbt após Hop hot → Telegram |
 | `06-mensal-curva-abc-tempo-entrega.json` | Cron dia 1, 02:00 | Curva ABC + Tempo Entrega → Telegram |
 | `08-fornecedores-cnpj-mensal-full.json` | Cron dia 1, 03:00 | Enriquecimento de CNPJ full (reprocessa tudo) → Telegram |
+| `09-mercado-externo-ipca-pmc-diario.json` | Cron diário 00:30 | Atualiza IPCA/PMC (`/run-mercado-externo`) → Telegram |
+| `10-meta-comercial-recalcular-manual.json` | Webhook `recalcular-meta-comercial` (GET, sem auth) | Disparado pelo botão "Recalcular Rateio" no NocoDB (base Meta Comercial) → roda `dbt run --select mart_meta_comercial` → Telegram |
 
 > Não existe mais um `07`: era o "Enriquecer CNPJ (diário)" standalone, **excluído** em
 > 2026-06-22 — a lógica (chamada `/run-cnpj` + checagem + notificação) foi migrada pro

@@ -1,0 +1,115 @@
+{
+  "name": "10 · Meta Comercial — Recalcular (manual)",
+  "nodes": [
+    {
+      "id": "9693c71f-8cf3-4da8-acae-ac64f44e6685",
+      "name": "Recalcular Meta Comercial (Webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "position": [0, 96],
+      "webhookId": "bf8f5c9b-6250-4300-a79d-151e27bbcdda",
+      "parameters": {
+        "path": "recalcular-meta-comercial",
+        "httpMethod": "GET",
+        "responseData": "firstEntryJson",
+        "responseMode": "lastNode",
+        "authentication": "none"
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "43b57030-c7fd-4f0e-bb13-1b4443b8f220",
+      "name": "Recalcular Mart",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [224, 96],
+      "parameters": {
+        "url": "http://host.docker.internal:8000/run",
+        "method": "POST",
+        "options": { "timeout": 300000 },
+        "sendQuery": true,
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "queryParameters": {
+          "parameters": [{ "name": "select", "value": "mart_meta_comercial" }]
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": { "id": "Vo79O80LNX6gh7wt", "name": "Trigger API Key" }
+      },
+      "typeVersion": 4.4
+    },
+    {
+      "id": "50dde803-793b-4263-822f-425894be5c76",
+      "name": "Sucesso?",
+      "type": "n8n-nodes-base.if",
+      "position": [448, 96],
+      "parameters": {
+        "conditions": {
+          "options": { "leftValue": "", "caseSensitive": true, "typeValidation": "strict" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "operator": { "type": "number", "operation": "equals" },
+              "leftValue": "={{ $json.returncode }}",
+              "rightValue": 0
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.3
+    },
+    {
+      "id": "844c5520-b48e-4fa9-8321-7df97dbf163b",
+      "name": "Notificar Sucesso",
+      "type": "n8n-nodes-base.telegram",
+      "position": [672, 0],
+      "webhookId": "1d2273bd-14aa-4021-ab90-4c025bcb162a",
+      "parameters": {
+        "text": "=✅ Meta Comercial recalculada\n📅 {{ $now.toFormat(\"dd/MM/yyyy HH:mm\") }}",
+        "chatId": "8466427080",
+        "resource": "message",
+        "operation": "sendMessage",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "credentials": {
+        "telegramApi": { "id": "tp24lH41oNzxB65M", "name": "SuperqueOps" }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "58ec0d69-9acb-4453-b6c4-88277b95a072",
+      "name": "Notificar Erro",
+      "type": "n8n-nodes-base.telegram",
+      "position": [672, 192],
+      "webhookId": "cbea7182-3197-4bf2-bf87-9c2f8f9b91cf",
+      "parameters": {
+        "text": "=❌ Recalculo da Meta Comercial falhou\n🔍 {{ $json.stderr || $json.stdout.slice(-500) }}",
+        "chatId": "8466427080",
+        "resource": "message",
+        "operation": "sendMessage",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "credentials": {
+        "telegramApi": { "id": "tp24lH41oNzxB65M", "name": "SuperqueOps" }
+      },
+      "typeVersion": 1.2
+    }
+  ],
+  "connections": {
+    "Recalcular Meta Comercial (Webhook)": {
+      "main": [[{ "node": "Recalcular Mart", "type": "main", "index": 0 }]]
+    },
+    "Recalcular Mart": {
+      "main": [[{ "node": "Sucesso?", "type": "main", "index": 0 }]]
+    },
+    "Sucesso?": {
+      "main": [
+        [{ "node": "Notificar Sucesso", "type": "main", "index": 0 }],
+        [{ "node": "Notificar Erro", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  }
+}
