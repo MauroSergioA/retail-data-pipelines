@@ -30,9 +30,20 @@ ranking_por_cidade AS (
 ),
 
 segmento AS (
-    SELECT 
-        *   
+    SELECT
+        *
     FROM {{ ref('stg_mad_segmento') }}
+),
+
+{#
+  Override manual de lojas encerradas: status_empresa vem direto do Consinco
+  (MAX_EMPRESA) e nem sempre e atualizado pra INATIVA quando a loja encerra de
+  fato (ex.: lojas 3 e 4, encerradas em jan/2026, ainda aparecem como ATIVA na
+  origem). Sem tocar no Consinco - so corrige aqui, na unica fonte de verdade
+  que o resto do projeto consulta pra saber se uma loja esta ativa.
+#}
+lojas_encerradas AS (
+    SELECT * FROM {{ ref('lojas_encerradas_manual') }}
 )
 
 SELECT
@@ -64,8 +75,11 @@ SELECT
     r.aberto_domingo,
     r.meta_margem_lucro,
     r.meta_dia_estoque,
-    r.status_empresa,
-    r.dta_fechamento_fiscal,
+    CASE
+        WHEN le.empresa_id IS NOT NULL THEN 'INATIVA'
+        ELSE r.status_empresa
+    END                                                                                     AS status_empresa,
+    COALESCE(le.data_encerramento, r.dta_fechamento_fiscal)                                AS dta_fechamento_fiscal,
     r.inicio_estoque,
     r.nsu_nf,
     p.total_pdv_ativo,
@@ -89,6 +103,7 @@ FROM ranking_por_cidade                   r
 LEFT JOIN lojas_por_cidade                c ON r.cidade = c.cidade
 LEFT JOIN pdv_ativo_por_loja              p ON r.empresa_id = p.empresa_id
 LEFT JOIN segmento                        s ON r.segmento_principal = s.segmento_id
+LEFT JOIN lojas_encerradas                le ON r.empresa_id = le.empresa_id
 ORDER BY r.empresa_id
 
 

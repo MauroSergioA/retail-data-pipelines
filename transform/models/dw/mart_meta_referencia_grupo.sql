@@ -10,7 +10,11 @@
   - Parte 1 (tendencia interna): faturamento do mesmo mes no ano anterior x
     taxa de crescimento suavizada (media dos ultimos 6 meses de crescimento
     YoY) = sugestao_meta_nominal. Empresa 1 (MATRIZ) excluida, mesmo criterio
-    do rateio por loja (ver Fact_MetaVenda original).
+    do rateio por loja (ver Fact_MetaVenda original). Comparacao "mesmas lojas"
+    (like-for-like): so lojas ATIVAS hoje entram, em todo o historico - evita
+    que o fechamento de uma loja (ex.: lojas 3 e 4, jan/2026) apareca como
+    queda de faturamento do grupo quando na verdade e so o efeito de ter menos
+    lojas operando.
   - Parte 2 (contexto externo): IPCA de alimentos acumulado 12m e variacao
     anual do setor de hiper/supermercados (IBGE PMC) - nao mudam o numero
     sugerido, sao contexto pra diretoria avaliar se o crescimento e real ou
@@ -27,12 +31,26 @@ WITH spine AS (
     )::DATE AS mes
 ),
 
+{#
+  Comparacao "mesmas lojas" (like-for-like): so entram lojas ATIVAS hoje, em
+  TODOS os meses do historico - inclusive nos meses em que uma loja hoje
+  encerrada ainda vendia. Sem isso, fechar uma loja aparenta queda de
+  faturamento do grupo (perde-se a receita dela no periodo atual mas o ano
+  anterior continua somando ela inteira). empresa_id=1 (MATRIZ) excluida por
+  motivo diferente: nao e loja de venda, so usada hoje para incentivo.
+#}
+lojas_para_meta AS (
+    SELECT empresa_id
+    FROM {{ ref('dim_empresa_info') }}
+    WHERE status_empresa = 'ATIVA' AND empresa_id <> 1
+),
+
 vendas_mensal AS (
     SELECT
-        DATE_TRUNC('month', data_venda)::DATE AS mes,
-        SUM(valor_venda_liquido) AS faturamento
-    FROM {{ ref('fato_venda') }}
-    WHERE empresa_id <> 1
+        DATE_TRUNC('month', v.data_venda)::DATE AS mes,
+        SUM(v.valor_venda_liquido) AS faturamento
+    FROM {{ ref('fato_venda') }} v
+    INNER JOIN lojas_para_meta l ON l.empresa_id = v.empresa_id
     GROUP BY 1
 ),
 
