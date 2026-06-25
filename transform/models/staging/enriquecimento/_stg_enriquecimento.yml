@@ -22,3 +22,24 @@ models:
         description: Timestamp da última atualização do registro pelo script de enriquecimento.
         data_tests:
           - not_null
+
+  - name: stg_indicadores_mercado_externo
+    description: >
+      Staging de bronze.indicadores_mercado_externo (IPCA via BCB, PMC via IBGE).
+      Cast simples, sem derivação — usado pelo mart_meta_referencia_grupo.
+    columns:
+      - name: data_referencia
+        description: Primeiro dia do mês de referência.
+        data_tests:
+          - not_null
+      - name: indicador
+        description: "IPCA_GERAL, IPCA_ALIMENTOS_BEBIDAS, PMC_HIPER_SUPER_INDICE ou PMC_HIPER_SUPER_VAR_ANUAL."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['IPCA_GERAL', 'IPCA_ALIMENTOS_BEBIDAS', 'PMC_HIPER_SUPER_INDICE', 'PMC_HIPER_SUPER_VAR_ANUAL']
+      - name: valor
+        description: Valor do indicador no mês.
+        data_tests:
+          - not_null

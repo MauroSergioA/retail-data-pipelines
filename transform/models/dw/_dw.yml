@@ -208,6 +208,56 @@ models:
         data_tests:
           - not_null
 
+  - name: mart_meta_referencia_grupo
+    description: >
+      Apoio à definição da meta comercial do grupo — não é a meta em si (ver
+      docs/negocio/redesign_dashboards.md, "Apoio à Definição de Meta do Grupo" e
+      "Meta comercial — desenho fechado"). Grain: mes (1 linha por mês, incluindo
+      uma linha de projeção pro mês seguinte ao último com venda real). Combina
+      tendência interna (faturamento do mesmo mês ano anterior × crescimento
+      suavizado dos últimos 6 meses, empresa_id=1/MATRIZ excluída) com contexto
+      externo (IPCA de alimentos acumulado 12m via BCB, variação anual do setor
+      de hiper/supermercados via IBGE PMC) — o contexto externo não altera o
+      número sugerido, é referência pra diretoria avaliar se o crescimento é
+      real ou só inflação, e se a rede performa melhor/peor que o setor.
+    columns:
+      - name: mes
+        description: Primeiro dia do mês de referência. Chave primária.
+        data_tests:
+          - not_null
+          - unique
+      - name: faturamento_realizado
+        description: Faturamento líquido do grupo no mês (empresa_id ≠ 1). NULL para o mês de projeção.
+      - name: faturamento_ano_anterior
+        description: Faturamento líquido do mesmo mês, ano anterior — base sazonal da sugestão.
+      - name: crescimento_yoy_mensal
+        description: >
+          Variação % do mês vs. mesmo mês ano anterior. NULL pro mês em
+          andamento (incompleto) e pro mês de projeção — não entra no cálculo
+          de tendência pra não distorcer com dado parcial.
+      - name: crescimento_yoy_medio_6m
+        description: Média de crescimento_yoy_mensal dos 6 meses anteriores (exclui o próprio mês).
+      - name: sugestao_meta_nominal
+        description: faturamento_ano_anterior × (1 + crescimento_yoy_medio_6m/100) — referência técnica, não a meta definida pela diretoria.
+      - name: ipca_alimentos_acumulado_12m
+        description: IPCA Alimentação e Bebidas acumulado nos últimos 12 meses (BCB SGS série 1635, soma simples).
+      - name: pmc_var_anual_setor
+        description: Variação anual do volume de vendas do setor de hiper/supermercados (IBGE PMC, tabela 8882, categoria 103154). Pode ficar NULL nos meses mais recentes por defasagem de publicação do IBGE.
+      - name: crescimento_real_estimado
+        description: crescimento_yoy_medio_6m menos ipca_alimentos_acumulado_12m — aproximação de quanto do crescimento é volume real vs. só inflação.
+      - name: diferenca_vs_setor
+        description: crescimento_yoy_medio_6m menos pmc_var_anual_setor — rede crescendo mais ou menos que o setor.
+      - name: tipo_linha
+        description: "REALIZADO, EM ANDAMENTO (mês corrente, incompleto) ou PROJEÇÃO (mês seguinte ao último com dado)."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['REALIZADO', 'EM ANDAMENTO', 'PROJEÇÃO']
+      - name: carregado_em
+        description: Timestamp do build dbt.
+        data_tests:
+          - not_null
+
   - name: mart_curva_abc
     description: >
       Curva ABC de produtos por loja, calculada sobre os últimos 12 meses a partir

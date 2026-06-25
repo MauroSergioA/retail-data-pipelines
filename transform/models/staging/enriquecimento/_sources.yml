@@ -19,3 +19,21 @@ sources:
             description: CNPJ (14 dígitos, sem formatação) — chave primária.
           - name: _loaded_at
             description: Timestamp da última atualização do registro.
+      - name: indicadores_mercado_externo
+        description: >
+          Indicadores de mercado externo (IPCA via Banco Central, PMC via IBGE),
+          carregados por scripts/mercado_externo_enriquecimento.py. Usado pra dar
+          contexto de inflação e crescimento do setor na definição da meta
+          comercial. Uma linha por (data_referencia, indicador).
+        columns:
+          - name: data_referencia
+            description: Primeiro dia do mês de referência do indicador.
+          - name: indicador
+            description: >
+              IPCA_GERAL, IPCA_ALIMENTOS_BEBIDAS (BCB SGS 433/1635, variação %
+              mensal) ou PMC_HIPER_SUPER_INDICE/PMC_HIPER_SUPER_VAR_ANUAL (IBGE
+              tabela 8882, categoria Hipermercados e supermercados).
+          - name: valor
+            description: Valor do indicador no mês (% para IPCA/variação PMC, número-índice para PMC_HIPER_SUPER_INDICE).
+          - name: fonte
+            description: BCB_SGS ou IBGE_SIDRA.
