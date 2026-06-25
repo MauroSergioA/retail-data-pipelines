@@ -33,13 +33,24 @@ sources:
       - name: meta_ajustes_loja
         description: >
           Ajuste manual (zero-sum) na meta de uma loja específica, pros dois
-          cenários. Várias linhas por mês (uma por loja ajustada).
+          cenários — e também onde a diretoria VÊ o rateio calculado antes de
+          decidir o ajuste (colunas calculadas escritas pelo dbt via
+          macro sync_meta_ajustes_calculado, post-hook do mart_meta_comercial
+          — único caso no projeto onde dbt escreve no NocoDB em vez de só
+          ler). Uma linha por loja ativa por mês (criada automaticamente pelo
+          sync, mesmo sem ajuste manual).
         columns:
           - name: mes
             description: Mês de referência — combina com meta_parametros.
           - name: empresa_id
             description: ID da loja (dim_empresa_info.empresa_id). Nunca empresa_id = 1 (MATRIZ).
           - name: ajuste_padrao_valor
-            description: Ajuste manual (R$) na meta Padrão da loja — soma de todos os ajustes do mês deve ser zero.
+            description: Ajuste manual (R$) na meta Padrão da loja — soma de todos os ajustes do mês deve ser zero. Único campo realmente editado pela diretoria.
           - name: ajuste_desafio_valor
-            description: Ajuste manual (R$) na meta Desafio da loja — mesma regra de soma zero.
+            description: Ajuste manual (R$) na meta Desafio da loja — mesma regra de soma zero. Único campo realmente editado pela diretoria.
+          - name: participacao_loja_calculada
+            description: "[Calculado pelo dbt, não editar] Participação % da loja no faturamento do grupo."
+          - name: meta_padrao_sem_ajuste
+            description: "[Calculado pelo dbt, não editar] Meta Padrão da loja (R$) antes do ajuste manual."
+          - name: meta_desafio_sem_ajuste
+            description: "[Calculado pelo dbt, não editar] Meta Desafio da loja (R$) antes do ajuste manual."

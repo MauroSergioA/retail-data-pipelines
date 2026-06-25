@@ -1,6 +1,7 @@
 {{ config(
     materialized='table',
-    tags=['monthly']
+    tags=['monthly'],
+    post_hook="{{ sync_meta_ajustes_calculado() }}"
 ) }}
 
 {#

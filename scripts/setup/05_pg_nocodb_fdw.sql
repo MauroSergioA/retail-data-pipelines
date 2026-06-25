@@ -52,3 +52,19 @@ GRANT USAGE ON SCHEMA nocodb TO dbt_user;
 
 -- Base "Meta Comercial" (criada em 2026-06-25, schema p9o21o8pe6v138w):
 -- ja importada -> nocodb.meta_parametros, nocodb.meta_ajustes_loja
+
+-- ===== Caso especial: dbt ESCREVE numa tabela do NocoDB =====
+-- meta_ajustes_loja recebe colunas calculadas escritas por
+-- macros/sync_meta_ajustes_calculado.sql (post-hook do mart_meta_comercial)
+-- - assim a diretoria ve o rateio calculado na mesma tela onde ajusta. Ver
+-- docs/operacao/nocodb.md, secao "dbt escrevendo no NocoDB".
+--
+-- No banco nocodb:
+--   GRANT INSERT, UPDATE ON "p9o21o8pe6v138w".meta_ajustes_loja TO dbt_fdw_reader;
+-- No banco superque:
+--   GRANT INSERT, UPDATE ON nocodb.meta_ajustes_loja TO dbt_user;
+--   ALTER FOREIGN TABLE nocodb.meta_ajustes_loja ADD COLUMN participacao_loja_calculada NUMERIC;
+--   ALTER FOREIGN TABLE nocodb.meta_ajustes_loja ADD COLUMN meta_padrao_sem_ajuste NUMERIC;
+--   ALTER FOREIGN TABLE nocodb.meta_ajustes_loja ADD COLUMN meta_desafio_sem_ajuste NUMERIC;
+-- (colunas Formula do NocoDB, ex. meta_padrao_final, NUNCA sao importadas -
+-- sao calculadas pelo proprio NocoDB, nao existem como coluna real no Postgres)
