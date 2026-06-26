@@ -208,14 +208,57 @@ models:
         data_tests:
           - not_null
 
+  - name: mart_meta_participacao_historica
+    description: >
+      Participação % de cada loja e categoria no faturamento do grupo,
+      PRÉ-CALCULADA mês a mês — independente de qualquer meta digitada (ver
+      docs/negocio/redesign_dashboards.md, "Meta comercial — separação do
+      cálculo pesado"). Separado do rateio (`mart_meta_comercial`) pra que
+      aplicar uma meta nova seja só multiplicação trivial sobre participação
+      já pronta, em vez de escanear `fato_venda` (111M+ linhas) toda vez que
+      a diretoria digita um número — reduziu o recálculo de ~100s pra
+      ~0,3s. Grão: mes × anos_historico × empresa_id × categoria_id. Cobre o
+      mês corrente + próximos 12 (rolling, atualiza todo dia no cold) ×
+      anos_historico 1 a 3 — qualquer mês que a diretoria for digitar meta já
+      tem participação calculada esperando.
+    columns:
+      - name: mes
+        description: Mês de referência (mês corrente até +12, rolling).
+        data_tests:
+          - not_null
+      - name: anos_historico
+        description: Quantos anos anteriores foram usados nessa linha (1, 2 ou 3).
+        data_tests:
+          - not_null
+      - name: empresa_id
+        description: Loja — nunca empresa_id = 1 (MATRIZ).
+        data_tests:
+          - not_null
+      - name: categoria_id
+        description: Categoria do produto (dim_produto_info.categoria_id).
+      - name: participacao_loja_normalizada
+        description: "% da loja no faturamento do grupo nesse (mes, anos_historico) — repete por categoria, some 100% por mes×anos_historico."
+        data_tests:
+          - not_null
+      - name: participacao_categoria_normalizada
+        description: "% da categoria no faturamento da loja — soma 100% por mes×anos_historico×empresa_id."
+        data_tests:
+          - not_null
+      - name: carregado_em
+        description: Timestamp do build dbt.
+        data_tests:
+          - not_null
+
   - name: mart_meta_comercial
     description: >
       Rateio da meta comercial do grupo (definida pela diretoria em
       nocodb.meta_parametros) por loja e categoria — substitui o rateio manual
       no Excel (ver docs/negocio/redesign_dashboards.md, "Meta comercial -
-      desenho fechado"). Grão: mes × empresa_id × categoria_id. Participação %
-      usa o MESMO MÊS em cada ano anterior (não trailing consecutivo) —
-      preserva sazonalidade de categoria.
+      desenho fechado"). Grão: mes × empresa_id × categoria_id. Só aplica a
+      meta sobre a participação já calculada em
+      `mart_meta_participacao_historica` (mesmo mês em cada ano anterior, não
+      trailing consecutivo — preserva sazonalidade de categoria) — não
+      escaneia `fato_venda`, por isso roda em frações de segundo.
     columns:
       - name: mes
         description: Mês de referência da meta.
